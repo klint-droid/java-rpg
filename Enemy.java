@@ -1,0 +1,83 @@
+import java.util.Random;
+public class Enemy extends Character {
+    private Random random = new Random();
+
+    private String enemyType;
+
+    public Enemy(String name, String enemyType, double maxHp, double atkPower, double defPower) {
+        super(name, maxHp, atkPower, defPower);
+        this.enemyType = enemyType;
+    }
+
+    public String getEnemyType() {
+        return enemyType;
+    }
+
+    @Override
+    public void attack(Character target){
+
+        double damage = getAtkPower() - target.getDefPower();
+
+        if(damage < 0) damage = 0;
+
+        double critChance = random.nextDouble();
+
+        if(critChance < 10.0){
+            damage *= 2;
+            System.out.println(getEnemyType() + " landed a critical hit!");
+        }
+
+        target.takeDamage(damage);
+        System.out.println(getEnemyType() + " attacks " + target.getName() + " for " + damage + " damage.");
+    }
+
+    @Override
+    public void defend(){
+
+        System.out.println(getEnemyType() + " braces incoming attack.");
+    }
+
+    @Override
+    public void useSkill(Character target){
+        double damage = (getAtkPower() * 2) - target.getDefPower();
+
+        if(damage < 0) damage = 0;
+
+        target.takeDamage(damage);
+        System.out.println(getEnemyType() + " uses Savage Strike on " + target.getName() + " for " + damage + " damage.");
+    }
+
+    public void taunt(Character target){
+        int tauntChance = random.nextInt(100);
+
+        if(tauntChance < 50){
+            target.setTaunted(true);
+            target.setTauntTurns(1);
+            System.out.println(getName() + " taunts " + target.getName() + "!");
+            System.out.println(target.getName() + " is forced to attack next turn!");
+        } else {
+            System.out.println(getName() + " fails to taunt " + target.getName() + "!");
+        }
+    }
+    public void enemyAction(Character target){
+        int action  = random.nextInt(4);
+
+        switch (action) {
+            case 0:
+                attack(target);
+                break;
+            case 1:
+                defend();
+                break;
+            case 2:
+                useSkill(target);
+                break;
+            case 3:
+                taunt(target);
+                break;
+            default:
+                break;
+        }
+    }
+}
+
