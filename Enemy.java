@@ -45,7 +45,7 @@ public class Enemy extends Character {
     public void defend(){
 
         setDefending(true);
-        System.out.println(getEnemyType() + " takes a defensive stance!");
+        System.out.println(getEnemyType() + " braces for incoming attack!");
 
     }
 

@@ -49,7 +49,7 @@ public class Mage extends Character {
     public void useSkill(Character target){
 
         double damage =
-            calculateDamage(target, 2.5);
+            calculateDamage(target, 1.8);
 
         target.takeDamage(damage);
 

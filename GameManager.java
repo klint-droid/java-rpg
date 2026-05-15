@@ -98,11 +98,13 @@ public class GameManager {
             System.out.println("====== Wave " + currentWave + " =======" + "\n");
             ArrayList<Enemy> enemies = createWave(currentWave);
 
+            int enemyCount = enemies.size();
+
             BattleSystem battle = new BattleSystem(players, enemies, inventory);
 
             battle.startBattle();
 
-            enemiesDefeated += enemies.size();
+            enemiesDefeated += enemyCount;
 
             if(hasLivingPlayers()){
                 System.out.println("\n==================");
