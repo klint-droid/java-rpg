@@ -21,7 +21,12 @@ public class BattleSystem {
 
     public void startBattle(){
         while(hasLivingPlayers() && hasLivingEnemies()){
-            System.out.println("\n\n========= Turn " + turnCount + " ==========\n\n");
+            System.out.println("\n====================");
+            System.out.println("            TURN " + turnCount);
+            System.out.println("====================");
+
+            displayPartyStatus();
+            displayEnemies();
 
             playerTurn();
 
@@ -103,17 +108,17 @@ public class BattleSystem {
                 continue;
             }
 
-            Enemy target = enemies.get(0);
-
             switch (choice) {
                 case 1:
-                    player.attack(target);
+                    Enemy attackTarget = chooseTarget();
+                    player.attack(attackTarget);
                     break;
                 case 2:
                     player.defend();
                     break;
                 case 3:
-                    player.useSkill(target);
+                    Enemy skillTarget = chooseTarget();
+                    player.useSkill(skillTarget);
                     break;
                 case 4:
                     try {
@@ -127,7 +132,9 @@ public class BattleSystem {
                             System.out.println("Invalid item input.");
                             continue;
                         }
-                        inventory.useItem(itemChoice - 1, player);
+
+                        Character targetPlayer = choosePlayerTarget();
+                        inventory.useItem(itemChoice - 1, targetPlayer);
                     } catch (EmptyInventoryException e) {
                         System.out.println(e.getMessage());
                     } catch(IndexOutOfBoundsException e){
@@ -152,11 +159,85 @@ public class BattleSystem {
     }
 
     private void displayEnemies(){
-        System.out.println("\n Enemies: ");
+        System.out.println("\n=== Enemies ===");
         for(int i = 0; i < enemies.size(); i++){
             Enemy enemy = enemies.get(i);
 
-            System.out.println(i + 1 + ". " + enemy.getEnemyType() + " - HP: " + enemy.getHp());
+            String status = enemy.isAlive() ? "Alive" : "Dead";
+
+            System.out.println((i + 1) + ". " + enemy.getName() + " | HP: " + enemy.getHp() + " | Status: " + status);
+        }
+
+        System.out.println("===============\n");
+    }
+
+    private void displayPartyStatus(){
+        System.out.println("\n === Party Status === ");
+
+        for(Character player : players){
+            String status = player.isAlive() ? "Alive" : "Dead";
+
+            System.out.println(player.getName() + " | HP: " + player.getHp() + " | Status: " + status);
+        }
+
+        System.out.println("=====================");
+    }
+    private Enemy chooseTarget(){
+
+        while(true){
+
+            displayEnemies();
+
+            System.out.print("Choose target: ");
+
+            try{
+
+                int targetChoice = Integer.parseInt(scanner.nextLine());
+
+                if(targetChoice < 1 || targetChoice > enemies.size()){
+
+                    System.out.println("Invalid target choice.");
+                    continue;
+                }
+
+                Enemy target = enemies.get(targetChoice - 1);
+
+                if(!target.isAlive()){
+
+                    System.out.println("That enemy is already defeated.");
+                    continue;
+                }
+
+                return target;
+
+            } catch(NumberFormatException e){
+
+                System.out.println("Invalid input.");
+            }
+        }
+    }
+
+    private Character choosePlayerTarget(){
+        while(true){
+            System.out.println("\n Choose Party Member: ");
+            for(int i = 0; i < players.size(); i++){
+                Character player = players.get(i);
+
+                System.out.println((i + 1) + ". " + player.getName() + " | HP: " + player.getHp());
+            }
+
+            try {
+                int choice = Integer.parseInt(scanner.nextLine());
+
+                if(choice < 1 || choice > players.size()){
+                    System.out.println("Invalid choice.");
+                    continue;
+                }
+
+                return players.get(choice);
+            } catch(NumberFormatException e){
+                System.out.println("Invalid input.");
+            }
         }
     }
 

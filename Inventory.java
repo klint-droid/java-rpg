@@ -33,9 +33,27 @@ public class Inventory {
 
         Item item = items.get(index);
 
-        target.heal(item.getEffectValue());
+        if(item.getName().equalsIgnoreCase("Revive Potion")){
+            if(target.isAlive()){
+                System.out.println("Character is already alive.");
+                return;
+            }
 
-        System.out.println(target.getName() + " healed for " + item.getEffectValue() + " HP.");
+            double reviveHp = target.getMaxHp() * 0.5;
+
+            target.setHp(reviveHp);
+
+            System.out.println(target.getName() + " has been revived with " + reviveHp + " HP.");
+        } else {
+            if(!target.isAlive()){
+                System.out.println("Character is dead.");
+                return;
+            }
+
+            target.heal(item.getEffectValue());
+
+            System.out.println(target.getName() + " healed for " + item.getEffectValue() + " HP.");
+        }
 
         items.remove(index);
     }

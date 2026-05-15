@@ -1,7 +1,4 @@
-import java.util.Random;
-
 public class Warrior extends Character {
-    private Random random = new Random();
 
     public Warrior(String name){
         super(name, 150, 30, 20);
@@ -9,21 +6,19 @@ public class Warrior extends Character {
 
     @Override
     public void attack(Character target) {
-        int roll = random.nextInt(100);
-
-        if(roll < 10){
+        
+        if(didMiss(10)){
             System.out.println(getName() + " misses the attack.");
             return;
         }
 
-        double damage = getAtkPower() - target.getDefPower();
+        double damage = calculateDamage(target, 1.0);
 
-        if(roll >= 85){
+        if(didCrit(15)){
             damage *= 2;
+
             System.out.println(getName() + " landed a critical hit!");
         }
-
-        if(damage < 0) damage = 0;
         
         target.takeDamage(damage);
 
@@ -41,12 +36,10 @@ public class Warrior extends Character {
     @Override
     public void useSkill(Character target){
 
-        double damage = (getAtkPower() * 2) - target.getDefPower();
-
-        if(damage < 0) damage = 0;
+        double damage = calculateDamage(target, 2.0);
         
         target.takeDamage(damage);
 
-        System.out.println(getName() + " uses skill on " + target.getName() + " for " + damage + " damage.");
+        System.out.println(getName() + " uses Power Strike on " + target.getName() + " for " + damage + " damage.");
     }
 }

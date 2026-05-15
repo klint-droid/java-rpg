@@ -1,10 +1,13 @@
 import java.util.ArrayList;
+import java.util.Scanner;
+
 public class GameManager {
     private ArrayList<Character> players;
     private Inventory inventory;
     private int currentWave;
     private int enemiesDefeated;
     private int gold;
+    private Scanner scanner;
 
     public GameManager(){
         players = new ArrayList<>();
@@ -13,16 +16,83 @@ public class GameManager {
         currentWave = 1;
         enemiesDefeated = 0;
         gold = 100;
+        scanner = new Scanner(System.in);
     }
 
     private void createParty(){
-        players.add(new Warrior("Rex"));
-        players.add(new Mage("Klint"));
-        players.add(new Archer("Kent"));
+        System.out.println("------ CREATE PARTY ------" + "\n");
+        int choicesMade = 0;
+
+        while(choicesMade < 2){
+            System.out.println("\n Choose characters: " + (choicesMade + 1));
+            System.out.println("1. Warrior");
+            System.out.println("2. Mage");
+            System.out.println("3. Archer");
+
+            int choice;
+
+            try{
+                choice = Integer.parseInt(scanner.nextLine());
+            } catch(NumberFormatException e){
+                System.out.println("Invalid input.");
+                continue;
+            }
+
+            System.out.println("\n Enter character name: ");
+
+            String name = scanner.nextLine();
+
+            Character newCharacter = null;
+
+            switch (choice) {
+                case 1:
+                    newCharacter = new Warrior(name);
+                    break;
+                case 2:
+                    newCharacter = new Mage(name);
+                    break;
+                case 3:
+                    newCharacter = new Archer(name);
+                    break;
+                default:
+                    System.out.println("Invalid choice.");
+                    break;
+            }
+
+            boolean duplicate = false;
+
+            for(Character player : players){
+                if(player.getClass() == newCharacter.getClass()){
+                    duplicate = true;
+                    break;
+                }
+            }
+
+            if(duplicate){
+                System.out.println("Character already in party.");
+                continue;
+            }
+
+            players.add(newCharacter);
+
+            System.out.println(name + " added to party.");
+
+            choicesMade++;
+        }
+
+        System.out.println("\n Finished creating party ");
+
+        System.out.println("\n Your party: ");
+
+        for(Character player : players){
+            System.out.println("- " + player.getName() + " (" + player.getClass().getSimpleName() + ")");
+        }
     }
 
     public void startGame(){
-        createParty();
+        if(players.isEmpty()){
+            createParty();
+        }
 
         while(currentWave <= 4 && hasLivingPlayers()){
             System.out.println("====== Wave " + currentWave + " =======" + "\n");
@@ -35,9 +105,15 @@ public class GameManager {
             enemiesDefeated += enemies.size();
 
             if(hasLivingPlayers()){
-                System.out.println("\nWave " + currentWave + " complete! Enemies defeated: " + enemiesDefeated + "\n");
+                System.out.println("\n==================");
+                System.out.println("        WAVE " + currentWave + " CLEARED!!!");
+                System.out.println("Enemies Defeated: " + enemiesDefeated);
+                System.out.println("==================");
                 gold += 100;
-                System.out.println("Gold: 100 added\n");
+                
+                System.out.println("You earn 100 gold!");
+
+                System.out.println("Current Gold: " + gold);
 
                 Shop shop = new Shop(inventory, gold);
                 gold = shop.openShop();
@@ -96,6 +172,9 @@ public class GameManager {
 
         System.out.println("Waves Cleared: " + (currentWave - 1));
         System.out.println("Enemies Defeated: " + enemiesDefeated);
+        System.out.println("Gold Earned: " + gold);
+
+        System.out.println("==================");
     }
     
     public void loadSaveGame(SaveData saveData){

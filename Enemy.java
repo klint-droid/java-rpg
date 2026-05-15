@@ -16,19 +16,29 @@ public class Enemy extends Character {
     @Override
     public void attack(Character target){
 
-        double damage = getAtkPower() - target.getDefPower();
+        double damage =
+            calculateDamage(target, 1.0);
 
-        if(damage < 0) damage = 0;
+        if(didCrit(10)){
 
-        double critChance = random.nextDouble();
-
-        if(critChance < 0.10){
             damage *= 2;
-            System.out.println(getEnemyType() + " landed a critical hit!");
+
+            System.out.println(
+                getEnemyType()
+                + " landed a critical hit!"
+            );
         }
 
         target.takeDamage(damage);
-        System.out.println(getEnemyType() + " attacks " + target.getName() + " for " + damage + " damage.");
+
+        System.out.println(
+            getEnemyType()
+            + " attacks "
+            + target.getName()
+            + " for "
+            + damage
+            + " damage."
+        );
     }
 
     @Override
@@ -36,17 +46,25 @@ public class Enemy extends Character {
 
         setDefending(true);
         System.out.println(getEnemyType() + " takes a defensive stance!");
-        
+
     }
 
     @Override
     public void useSkill(Character target){
-        double damage = (getAtkPower() * 2) - target.getDefPower();
 
-        if(damage < 0) damage = 0;
+        double damage =
+            calculateDamage(target, 2.0);
 
         target.takeDamage(damage);
-        System.out.println(getEnemyType() + " uses Savage Strike on " + target.getName() + " for " + damage + " damage.");
+
+        System.out.println(
+            getEnemyType()
+            + " uses Savage Strike on "
+            + target.getName()
+            + " for "
+            + damage
+            + " damage."
+        );
     }
 
     public void taunt(Character target){

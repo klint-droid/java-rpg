@@ -8,6 +8,7 @@ public abstract class Character {
     private boolean taunted;
     private int tauntTurns;
     private boolean defending;
+    protected Random random = new Random();
 
     // Constructor
     public Character(String name, double maxHp, double atkPower, double defPower) {
@@ -131,6 +132,20 @@ public abstract class Character {
     }
     public String displayStats(){
         return "Name: " + name + "\nHP: " + hp + "/" + maxHp + "\nAttack Power: " + atkPower + "\nDefense Power: " + defPower;
+    }
+
+    protected boolean didMiss(int missChance){
+        return random.nextInt(100) < missChance;
+    }
+
+    protected boolean didCrit(int critChance){
+        return random.nextInt(100) < critChance;
+    }
+
+    protected double calculateDamage(Character target, double multiplier){
+        double damage = (getAtkPower() * multiplier) - target.getDefPower();
+
+        return Math.max(1, damage);
     }
     // Abstract methods
 

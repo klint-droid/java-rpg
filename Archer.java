@@ -1,7 +1,4 @@
-import java.util.Random;
 public class Archer extends Character {
-    
-    private Random random = new Random();
 
     public Archer(String name){
         super(name, 100, 40, 5);
@@ -10,25 +7,32 @@ public class Archer extends Character {
     @Override
     public void attack(Character target){
 
-        int roll = random.nextInt(100);
+        if(didMiss(15)){
 
-        if(roll < 10){
-            System.out.println(getName() + " misses the attack.");
+            System.out.println(getName() + " misses the shot.");
             return;
         }
 
-        double damage = getAtkPower() - target.getDefPower();
+        double damage =
+            calculateDamage(target, 1.0);
 
-        if(damage < 0) damage = 0;
-        
-        if (roll >= 75) {
+        if(didCrit(25)){
+
             damage *= 2;
-            System.out.println("Critical headshot hit!");
+
+            System.out.println("Critical headshot!");
         }
-        
+
         target.takeDamage(damage);
 
-        System.out.println(getName() + " shoots an arrow to " + target.getName() + " for " + damage + " damage.");
+        System.out.println(
+            getName()
+            + " shoots "
+            + target.getName()
+            + " for "
+            + damage
+            + " damage."
+        );
     }
 
     @Override
@@ -45,18 +49,29 @@ public class Archer extends Character {
         double totalDamage = 0;
 
         for(int i = 1; i <= 3; i++){
-            double damage = (getAtkPower() / 3) * i - target.getDefPower();
-            
-            if(damage < 0) damage = 0;
-            
+
+            double damage =
+                calculateDamage(target, 0.7);
+
             target.takeDamage(damage);
 
             totalDamage += damage;
 
-            System.out.println("Arrow " + i + " hits " + target.getName() + " for " + damage + " damage.");
+            System.out.println(
+                "Arrow "
+                + i
+                + " hits for "
+                + damage
+                + " damage."
+            );
         }
 
-        System.out.println(getName() + " use Triple Shot on " + target.getName() + " for a total of " + totalDamage + " damage.");
+        System.out.println(
+            getName()
+            + " used Triple Shot for "
+            + totalDamage
+            + " total damage."
+        );
     }
 
 }

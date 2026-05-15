@@ -1,7 +1,4 @@
-import java.util.Random;
-
 public class Mage extends Character {
-    private Random random = new Random();
 
     public Mage(String name) {
         super(name, 100, 40, 5);
@@ -9,26 +6,36 @@ public class Mage extends Character {
 
     @Override
     public void attack(Character target){
+            
+        if(didMiss(10)){
 
-        int roll = random.nextInt(100);
-
-        if(roll < 10){
-            System.out.println(getName() + " misses the attack.");
+            System.out.println(getName() + " misses the spell.");
             return;
         }
 
-        double damage = (getAtkPower() + 10) - target.getDefPower();
+        double damage =
+            calculateDamage(target, 1.2);
 
-        if(roll >= 80){
+        if(didCrit(20)){
+
             damage *= 2;
-            System.out.println(getName() + " landed a magical critical hit!");
+
+            System.out.println(
+                getName()
+                + " landed a magical critical hit!"
+            );
         }
 
-        if(damage < 0) damage = 0;
-        
         target.takeDamage(damage);
 
-        System.out.println(getName() + " casts a fireball to " + target.getName() + " for " + damage + " damage.");
+        System.out.println(
+            getName()
+            + " casts Fireball on "
+            + target.getName()
+            + " for "
+            + damage
+            + " damage."
+        );
     }
 
     @Override
@@ -39,14 +46,20 @@ public class Mage extends Character {
     }
 
     @Override
-    public void useSkill(Character target) {
+    public void useSkill(Character target){
 
-        double damage = (getAtkPower() * 2);
+        double damage =
+            calculateDamage(target, 2.5);
 
-        if(damage < 0) damage = 0;
-        
         target.takeDamage(damage);
 
-        System.out.println(getName() + " casts a fireball on " + target.getName() + " for " + damage + " damage.");
+        System.out.println(
+            getName()
+            + " casts Inferno Blast on "
+            + target.getName()
+            + " for "
+            + damage
+            + " damage."
+        );
     }
 }

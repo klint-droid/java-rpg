@@ -19,7 +19,7 @@ public class SaveManager {
                 writer.write(player.getHp() + "\n");
             }
 
-            writer.write(inventory.getItems().size());
+            writer.write(inventory.getItems().size() + "\n");
 
             for(Item item : inventory.getItems()){
                 writer.write(item.getName() + "\n");
@@ -84,7 +84,7 @@ public class SaveManager {
 
             return new SaveData(currentWave, gold, players, inventory);
         } catch (Exception e) {
-            System.out.println("An error occurred while loading the game.");
+            System.out.println("Save file not found or corrupted.");
         }
 
         return null;
