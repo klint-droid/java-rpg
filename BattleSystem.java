@@ -94,7 +94,14 @@ public class BattleSystem {
 
             System.out.print("Enter your choice: ");
 
-            int choice = scanner.nextInt();
+            int choice;
+
+            try{
+                choice = Integer.parseInt(scanner.nextLine());
+            } catch(NumberFormatException e){
+                System.out.println("Invalid input. Please enter a number.");
+                continue;
+            }
 
             Enemy target = enemies.get(0);
 
@@ -112,7 +119,14 @@ public class BattleSystem {
                     try {
                         inventory.displayItems();
                         System.out.println("Choose an item to use:");
-                        int itemChoice = scanner.nextInt();
+                        int itemChoice;
+
+                        try{
+                            itemChoice = Integer.parseInt(scanner.nextLine());
+                        } catch (NumberFormatException e){
+                            System.out.println("Invalid item input.");
+                            continue;
+                        }
                         inventory.useItem(itemChoice - 1, player);
                     } catch (EmptyInventoryException e) {
                         System.out.println(e.getMessage());

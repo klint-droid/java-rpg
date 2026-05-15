@@ -26,7 +26,14 @@ public class Shop {
 
             System.out.println("Enter your choice: ");
 
-            int choice = scanner.nextInt();
+            int choice;
+
+            try{
+                choice = Integer.parseInt(scanner.nextLine());
+            } catch (NumberFormatException e){
+                System.out.println("Invalid input. Please enter a number.");
+                continue;
+            }
 
             switch (choice) {
                 case 1:
