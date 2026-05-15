@@ -111,14 +111,30 @@ public class BattleSystem {
             switch (choice) {
                 case 1:
                     Enemy attackTarget = chooseTarget();
+                    if(attackTarget == null){
+                        return;
+                    }
                     player.attack(attackTarget);
+                    removeDeadEnemies();
+
+                    if(!hasLivingEnemies()){
+                        return;
+                    }
                     break;
                 case 2:
                     player.defend();
                     break;
                 case 3:
                     Enemy skillTarget = chooseTarget();
+                    if(skillTarget == null){
+                        return;
+                    }
                     player.useSkill(skillTarget);
+                    removeDeadEnemies();
+
+                    if(!hasLivingEnemies()){
+                        return;
+                    }
                     break;
                 case 4:
                     try {
@@ -185,6 +201,9 @@ public class BattleSystem {
     private Enemy chooseTarget(){
 
         while(true){
+            if(!hasLivingEnemies()){
+                return null;
+            }
 
             displayEnemies();
 

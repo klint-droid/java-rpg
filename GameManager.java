@@ -135,17 +135,17 @@ public class GameManager {
 
         switch (wave) {
             case 1:
-                enemies.add(new Enemy("Goblin", "Goblin", 80, 80, 5));
+                enemies.add(new Enemy("Goblin", "Goblin", 120, 20, 5));
                 break;
             case 2:
-                enemies.add(new Enemy("Orc", "Orc", 120, 30, 10));
-                enemies.add(new Enemy("Goblin Archer", "Goblin", 70, 25, 5));
+                enemies.add(new Enemy("Orc", "Orc", 150, 30, 10));
+                enemies.add(new Enemy("Goblin Archer", "Goblin", 200, 25, 5));
                 break;
             case 3:
-                enemies.add(new Enemy("Dark Mage", "Dark Mage", 100, 40, 8));
+                enemies.add(new Enemy("Dark Mage", "Dark Mage", 300, 40, 8));
                 break;
             case 4:
-                enemies.add(new Enemy("Dragon", "Boss", 250, 50, 20));
+                enemies.add(new Enemy("Dragon", "Boss", 350, 100, 20));
                 break;
             default:
                 break;
