@@ -6,8 +6,17 @@ public class Main {
         System.out.println("=== RPG Game ===\n");
 
         System.out.println("1. New Game\n2. Load Game\n3. Exit\n");
-        System.out.println("Enter your choice: ");
-        int choice = scanner.nextInt();
+
+        int choice = 0;
+
+        try {
+            System.out.println("Enter your choice: ");
+            choice = Integer.parseInt(scanner.nextLine());
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid input. Please enter a number.");
+            scanner.close();
+            return;
+        }
 
         GameManager gameManager = new GameManager();
         SaveManager saveManager = new SaveManager();
