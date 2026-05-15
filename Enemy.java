@@ -22,7 +22,7 @@ public class Enemy extends Character {
 
         double critChance = random.nextDouble();
 
-        if(critChance < 10.0){
+        if(critChance < 0.10){
             damage *= 2;
             System.out.println(getEnemyType() + " landed a critical hit!");
         }
@@ -34,7 +34,9 @@ public class Enemy extends Character {
     @Override
     public void defend(){
 
-        System.out.println(getEnemyType() + " braces incoming attack.");
+        setDefending(true);
+        System.out.println(getEnemyType() + " takes a defensive stance!");
+        
     }
 
     @Override

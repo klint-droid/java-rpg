@@ -1,3 +1,4 @@
+import java.util.Random;
 public abstract class Character {
     private String name;
     private double hp;
@@ -6,6 +7,7 @@ public abstract class Character {
     private double defPower;
     private boolean taunted;
     private int tauntTurns;
+    private boolean defending;
 
     // Constructor
     public Character(String name, double maxHp, double atkPower, double defPower) {
@@ -16,6 +18,7 @@ public abstract class Character {
         this.defPower = defPower;
         this.taunted = false;
         this.tauntTurns = 0;
+        this.defending = false;
     }
 
     // Getters and Setters
@@ -60,6 +63,14 @@ public abstract class Character {
         this.defPower = defPower;
     }
 
+    public boolean isDefending() {
+        return defending;
+    }
+
+    public void setDefending(boolean defending) {
+        this.defending = defending;
+    }
+
     public boolean isTaunted() {
         return taunted;
     }
@@ -77,8 +88,20 @@ public abstract class Character {
     }
 
     // Common methods
+    protected boolean chanceSuccess(int percent){
+        Random random = new Random();
+        return random.nextInt(100) < percent;
+    }
 
     public void takeDamage(double damage){
+        if(defending){
+            damage *= 0.5;
+
+            System.out.println(name + " reduces damage by defending.");
+
+            defending = false;
+        }
+
         hp -= damage;
         if(hp < 0){
             hp = 0;

@@ -2,7 +2,6 @@ import java.util.Random;
 
 public class Mage extends Character {
     private Random random = new Random();
-    private double magicShieldBoost = 5;
 
     public Mage(String name) {
         super(name, 100, 40, 5);
@@ -34,9 +33,9 @@ public class Mage extends Character {
 
     @Override
     public void defend(){
-        double boostedDefPower = getDefPower() + magicShieldBoost;
+        setDefending(true);
 
-        System.out.println(getName() + " cast a magic shield with boosted defense power of " + boostedDefPower);
+        System.out.println(getName() + " casts a magic shield!");
     }
 
     @Override

@@ -18,18 +18,12 @@ public class Archer extends Character {
         }
 
         double damage = getAtkPower() - target.getDefPower();
+
+        if(damage < 0) damage = 0;
         
         if (roll >= 75) {
             damage *= 2;
             System.out.println("Critical headshot hit!");
-        }
-        if(damage < 0) damage = 0;
-
-        double critChance = random.nextDouble();
-
-        if(critChance < 15.0){
-            damage *= 2;
-            System.out.println("Critical hit!");
         }
         
         target.takeDamage(damage);
@@ -40,7 +34,9 @@ public class Archer extends Character {
     @Override
     public void defend(){
         
-        System.out.println(getName() + " prepares to dodge the next attack.");
+        setDefending(true);
+        
+        System.out.println(getName() + " takes a defensive stance!");
     }
     
     @Override

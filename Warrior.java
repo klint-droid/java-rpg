@@ -1,7 +1,6 @@
 import java.util.Random;
 
 public class Warrior extends Character {
-    private final double defenseBoost = 10;
     private Random random = new Random();
 
     public Warrior(String name){
@@ -33,9 +32,10 @@ public class Warrior extends Character {
 
     @Override
     public void defend(){
-        double boostedDefPower = getDefPower() + defenseBoost;
+        
+        setDefending(true);
 
-        System.out.println(getName() + " defends with boosted defense power of " + boostedDefPower);
+        System.out.println(getName() + " takes a defensive stance!");
     }
 
     @Override
