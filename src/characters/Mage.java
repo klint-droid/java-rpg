@@ -1,0 +1,73 @@
+package characters;
+import constants.GameConstants;
+import enums.CharacterType;
+import results.BattleResult;
+public class Mage extends Character {
+
+    public Mage(String name) {
+        super(name, 100, 40, 5, CharacterType.MAGE);
+    }
+
+    @Override
+    public BattleResult attack(Character target){
+            
+        if(didMiss(GameConstants.MAGE_MISS_CHANCE)){
+
+            return new BattleResult(getName() + " misses the attack.", 0, false, true);
+        }
+
+        double damage =
+            calculateDamage(target, 1.2);
+
+        boolean criticalHit = false;
+
+        if(didCrit(GameConstants.MAGE_CRIT_CHANCE)){
+
+            damage *= 2;
+
+            criticalHit = true;
+        }
+
+        target.takeDamage(damage);
+
+        return new BattleResult(
+            getName()
+            + (criticalHit
+                ? " landed a critical hit on "
+                : " attacked ")
+            + target.getName()
+            + " for "
+            + damage
+            + " damage.",
+            damage,
+            criticalHit,
+            false
+        );
+    }
+
+    @Override
+    public void defend(){
+        setDefending(true);
+    }
+
+    @Override
+    public BattleResult useSkill(Character target){
+
+        double damage =
+            calculateDamage(target, 1.8);
+
+        target.takeDamage(damage);
+
+        return new BattleResult(
+            getName()
+            + " used Fireball on "
+            + target.getName()
+            + " for "
+            + damage
+            + " damage.",
+            damage,
+            false,
+            false
+        );
+    }
+}

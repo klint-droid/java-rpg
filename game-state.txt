@@ -1,0 +1,15 @@
+1
+160
+2
+WARRIOR
+jfsdf
+150.0
+MAGE
+asd
+75.0
+5
+HealthPotion
+MegaPotion
+RevivePotion
+HealthPotion
+HealthPotion
