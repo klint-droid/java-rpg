@@ -15,3 +15,4 @@ public class HealthPotion extends Item{
         System.out.println(target.getName() + " healed for " + getEffectValue() + " HP.");
     }
 }
+

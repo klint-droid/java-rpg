@@ -14,9 +14,9 @@ import ui.ConsoleUI;
 public class GameManager {
     private ArrayList<Character> players;
     private Inventory inventory;
-    private int currentWave;
-    private int enemiesDefeated;
-    private int gold;
+    private double currentWave;
+    private double enemiesDefeated;
+    private double gold;
     private Scanner scanner;
     private ConsoleUI ui;
 
@@ -33,7 +33,7 @@ public class GameManager {
 
     private void createParty(){
         System.out.println("------ CREATE PARTY ------" + "\n");
-        int choicesMade = 0;
+        double choicesMade = 0;
 
         while(choicesMade < 2){
             System.out.println("\n Choose characters: " + (choicesMade + 1));
@@ -51,7 +51,6 @@ public class GameManager {
             }
 
             System.out.println("\n Enter character name: ");
-
             String name = scanner.nextLine();
 
             Character newCharacter;
@@ -100,9 +99,9 @@ public class GameManager {
 
         while(currentWave <= 4 && hasLivingPlayers()){
             System.out.println("====== Wave " + currentWave + " =======" + "\n");
-            ArrayList<Enemy> enemies = createWave(currentWave);
+            ArrayList<Enemy> enemies = createWave((int) currentWave);
 
-            int enemyCount = enemies.size();
+            double enemyCount = enemies.size();
 
             BattleSystem battle = new BattleSystem(players, enemies, inventory, scanner, ui);
 
@@ -195,3 +194,4 @@ public class GameManager {
         startGame();
     }
 }
+

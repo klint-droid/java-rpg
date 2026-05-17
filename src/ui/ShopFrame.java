@@ -18,10 +18,10 @@ public class ShopFrame extends JFrame {
     private static final long serialVersionUID = 1L;
     private final Inventory inventory;
     private final RpgGameUI parent;
-    private int gold;
+    private double gold;
     private JLabel goldLabel;
 
-    public ShopFrame(Inventory inventory, int gold, RpgGameUI parent) {
+    public ShopFrame(Inventory inventory, double gold, RpgGameUI parent) {
         super("Shop");
         this.inventory = inventory;
         this.gold = gold;
@@ -57,7 +57,7 @@ public class ShopFrame extends JFrame {
         add(panel, BorderLayout.CENTER);
     }
 
-    private void buy(inventory.Item item, int price) {
+    private void buy(inventory.Item item, double price) {
         if (gold >= price) {
             inventory.addItem(item);
             gold -= price;
@@ -70,3 +70,4 @@ public class ShopFrame extends JFrame {
         }
     }
 }
+

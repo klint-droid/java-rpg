@@ -4,23 +4,23 @@ import java.util.ArrayList;
 import characters.Character;
 import inventory.Inventory;
 public class SaveData {
-    private int currentWave;
-    private int gold;
+    private double currentWave;
+    private double gold;
     private ArrayList<Character> players;
     private Inventory inventory;
 
-    public SaveData(int currentWave, int gold, ArrayList<Character> players, Inventory inventory) {
+    public SaveData(double currentWave, double gold, ArrayList<Character> players, Inventory inventory) {
         this.currentWave = currentWave;
         this.gold = gold;
         this.players = players;
         this.inventory = inventory;
     }
 
-    public int getCurrentWave() {
+    public double getCurrentWave() {
         return currentWave;
     }
 
-    public int getGold() {
+    public double getGold() {
         return gold;
     }
 
@@ -32,3 +32,4 @@ public class SaveData {
         return inventory;
     }
 }
+

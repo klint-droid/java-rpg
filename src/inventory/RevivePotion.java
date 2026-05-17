@@ -17,3 +17,4 @@ public class RevivePotion extends Item {
     }
     
 }
+

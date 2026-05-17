@@ -27,11 +27,11 @@ public class PartySheetFrame extends JFrame {
         JPanel statusGrid = new JPanel(new GridLayout(party.size(), 1, 4, 4));
 
         for (Character c : party) {
-            String status = c.isAlive() ? "HP: " + (int) c.getHp() + "/" + (int) c.getMaxHp()
+            String status = c.isAlive() ? "HP: " + (double) c.getHp() + "/" + (double) c.getMaxHp()
                 : "DEAD";
-            String mana = "MP: " + (int) c.getMana() + "/" + (int) c.getMaxMana();
-            String atk = "ATK: " + (int) c.getAtkPower();
-            String def = "DEF: " + (int) c.getDefPower();
+            String mana = "MP: " + (double) c.getMana() + "/" + (double) c.getMaxMana();
+            String atk = "ATK: " + (double) c.getAtkPower();
+            String def = "DEF: " + (double) c.getDefPower();
             JLabel characterLabel = new JLabel(
                 c.getName() + " (" + c.getClass().getSimpleName() + ") - " + status + " | " + mana + " | " + atk + " | " + def);
             statusGrid.add(characterLabel);
@@ -45,3 +45,4 @@ public class PartySheetFrame extends JFrame {
         add(container);
     }
 }
+

@@ -119,3 +119,4 @@ public class InventoryFrame extends JFrame {
         }
     }
 }
+

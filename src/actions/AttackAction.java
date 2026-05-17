@@ -16,3 +16,4 @@ public class AttackAction implements BattleAction{
         return attacker.attack(target);
     }
 }
+

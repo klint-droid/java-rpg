@@ -18,3 +18,4 @@ public class ManaPotion extends Item {
         System.out.println(target.getName() + " restored " + getEffectValue() + " MP.");
     }
 }
+
