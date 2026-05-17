@@ -5,7 +5,7 @@ import results.BattleResult;
 public class Mage extends Character {
 
     public Mage(String name) {
-        super(name, 100, 40, 5, CharacterType.MAGE);
+        super(name, 100, 60, 40, 5, CharacterType.MAGE);
     }
 
     @Override
@@ -52,6 +52,9 @@ public class Mage extends Character {
 
     @Override
     public BattleResult useSkill(Character target){
+        if(!consumeMana(20)){
+            return new BattleResult(getName() + " tried to cast Fireball but does not have enough mana.", 0, false, false);
+        }
 
         double damage =
             calculateDamage(target, 1.8);

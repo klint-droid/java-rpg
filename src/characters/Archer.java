@@ -5,7 +5,7 @@ import results.BattleResult;
 public class Archer extends Character {
 
     public Archer(String name){
-        super(name, 100, 40, 5, CharacterType.ARCHER);
+        super(name, 100, 40, 40, 5, CharacterType.ARCHER);
     }
 
     @Override
@@ -54,6 +54,9 @@ public class Archer extends Character {
     
     @Override
     public BattleResult useSkill(Character target){
+        if(!consumeMana(18)){
+            return new BattleResult(getName() + " tried to use Arrow Rain but does not have enough mana.", 0, false, false);
+        }
 
         double totalDamage = 0;
 

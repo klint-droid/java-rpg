@@ -5,7 +5,7 @@ import results.BattleResult;
 public class Warrior extends Character {
 
     public Warrior(String name){
-        super(name, 150, 30, 20, CharacterType.WARRIOR);
+        super(name, 150, 30, 30, 20, CharacterType.WARRIOR);
     }
 
     @Override
@@ -49,6 +49,9 @@ public class Warrior extends Character {
 
     @Override
     public BattleResult useSkill(Character target){
+        if(!consumeMana(15)){
+            return new BattleResult(getName() + " tried to use Shield Bash but does not have enough mana.", 0, false, false);
+        }
 
         double damage = calculateDamage(target, 2.0);
         

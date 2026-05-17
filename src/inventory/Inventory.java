@@ -1,17 +1,19 @@
 package inventory;
-import java.util.ArrayList;
 
 import characters.Character;
+import java.util.ArrayList;
+
 public class Inventory {
-    private ArrayList<Item> items;
+    private final ArrayList<Item> items;
 
     public Inventory() {
-        items = new ArrayList<Item>();
+        items = new ArrayList<>();
     }
 
     public void addStarterItems(){
         items.add(new HealthPotion());
         items.add(new MegaPotion());
+        items.add(new ManaPotion());
         items.add(new RevivePotion());
     }
 

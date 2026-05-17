@@ -27,5 +27,6 @@ public final class GameConstants {
     // SHOP PRICES
     public static final int HEALTH_POTION_PRICE = 20;
     public static final int MEGA_POTION_PRICE = 50;
+    public static final int MANA_POTION_PRICE = 30;
     public static final int REVIVE_POTION_PRICE = 100;
 }

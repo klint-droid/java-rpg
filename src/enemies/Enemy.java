@@ -1,21 +1,17 @@
 package enemies;
-import java.util.Random;
-
-import constants.GameConstants;
+import ai.AggressiveAI;
+import ai.EnemyAI;
 import characters.Character;
+import constants.GameConstants;
 import enums.CharacterType;
 import results.BattleResult;
-import ai.EnemyAI;
-import ai.AggressiveAI;
 
 public class Enemy extends Character {
-    private Random random = new Random();
-
     private String enemyType;
     private EnemyAI ai;
 
     public Enemy(String name, String enemyType, double maxHp, double atkPower, double defPower) {
-        super(name, maxHp, atkPower, defPower, CharacterType.ENEMY);
+        super(name, maxHp, 0, atkPower, defPower, CharacterType.ENEMY);
         this.enemyType = enemyType;
         this.ai = new AggressiveAI();
     }

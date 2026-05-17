@@ -1,11 +1,13 @@
 package characters;
-import java.util.Random;
 import enums.CharacterType;
+import java.util.Random;
 import results.BattleResult;
 public abstract class Character {
     private String name;
     private double hp;
     private double maxHp;
+    private double mana;
+    private double maxMana;
     private double atkPower;
     private double defPower;
     private boolean taunted;
@@ -15,10 +17,12 @@ public abstract class Character {
     protected Random random = new Random();
 
     // Constructor
-    public Character(String name, double maxHp, double atkPower, double defPower, CharacterType characterType) {
+    public Character(String name, double maxHp, double maxMana, double atkPower, double defPower, CharacterType characterType) {
         this.name = name;
         this.hp = maxHp;
         this.maxHp = maxHp;
+        this.mana = maxMana;
+        this.maxMana = maxMana;
         this.atkPower = atkPower;
         this.defPower = defPower;
         this.taunted = false;
@@ -55,6 +59,22 @@ public abstract class Character {
 
     public void setMaxHp(double maxHp) {
         this.maxHp = maxHp;
+    }
+
+    public double getMana() {
+        return mana;
+    }
+
+    public void setMana(double mana) {
+        this.mana = mana;
+    }
+
+    public double getMaxMana() {
+        return maxMana;
+    }
+
+    public void setMaxMana(double maxMana) {
+        this.maxMana = maxMana;
     }
 
     public double getAtkPower() {
@@ -99,8 +119,7 @@ public abstract class Character {
 
     // Common methods
     protected boolean chanceSuccess(int percent){
-        Random random = new Random();
-        return random.nextInt(100) < percent;
+        return this.random.nextInt(100) < percent;
     }
 
     public void takeDamage(double damage){
@@ -125,6 +144,21 @@ public abstract class Character {
         }
     }
 
+    public boolean consumeMana(double amount) {
+        if (mana < amount) {
+            return false;
+        }
+        mana -= amount;
+        return true;
+    }
+
+    public void regenerateMana(double amount) {
+        mana += amount;
+        if (mana > maxMana) {
+            mana = maxMana;
+        }
+    }
+
     public boolean isAlive(){
         return hp > 0;
     }
@@ -140,7 +174,11 @@ public abstract class Character {
         }
     }
     public String displayStats(){
-        return "Name: " + name + "\nHP: " + hp + "/" + maxHp + "\nAttack Power: " + atkPower + "\nDefense Power: " + defPower;
+        return "Name: " + name
+            + "\nHP: " + hp + "/" + maxHp
+            + "\nMana: " + mana + "/" + maxMana
+            + "\nAttack Power: " + atkPower
+            + "\nDefense Power: " + defPower;
     }
 
     protected boolean didMiss(int missChance){
