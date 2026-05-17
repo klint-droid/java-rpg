@@ -15,3 +15,4 @@ public class DefendAction implements BattleAction {
         return new BattleResult(character.getName() + " defends.", 0, false, false);
     }
 }
+

@@ -92,7 +92,7 @@ public class Enemy extends Character {
     }
 
     public void taunt(Character target){
-        int tauntChance = random.nextInt(100);
+        double tauntChance = random.nextInt(100);
 
         if(tauntChance < 50){
             target.setTaunted(true);
@@ -124,4 +124,5 @@ public class Enemy extends Character {
         }
     }
 }
+
 

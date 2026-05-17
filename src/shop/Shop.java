@@ -10,16 +10,16 @@ import inventory.RevivePotion;
 public class Shop {
     private Inventory inventory;
     private Scanner scanner;
-    private int gold;
+    private double gold;
 
-    public Shop(Inventory inventory, int gold, Scanner scanner) {
+    public Shop(Inventory inventory, double gold, Scanner scanner) {
         this.inventory = inventory;
         this.gold = gold;
 
         this.scanner = scanner;
     }
 
-    public int openShop(){
+    public double openShop(){
         boolean shopping = true;
 
         while (shopping) {
@@ -98,3 +98,4 @@ public class Shop {
         }
     }
 }
+

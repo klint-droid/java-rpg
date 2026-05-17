@@ -60,7 +60,7 @@ public class Archer extends Character {
 
         double totalDamage = 0;
 
-        for(int i = 1; i <= 3; i++){
+        for(double i = 1; i <= 3; i++){
 
             double damage =
                 calculateDamage(target, 0.7);
@@ -92,3 +92,4 @@ public class Archer extends Character {
     }
 
 }
+

@@ -21,7 +21,7 @@ public class BattleSystem {
     private Inventory inventory;
     private Scanner scanner;
     private Random random;
-    private int turnCount;
+    private double turnCount;
     private ConsoleUI ui;
 
     public BattleSystem(ArrayList<Character> players, ArrayList<Enemy> enemies, Inventory inventory, Scanner scanner, ConsoleUI ui) {
@@ -88,7 +88,7 @@ public class BattleSystem {
 
                 Enemy target = enemies.get(0);
 
-                int missRoll = random.nextInt(100);
+                double missRoll = random.nextInt(100);
 
                 if(missRoll < 70){
                     System.out.println(player.getName() + " misses the attack due to being taunted.");
@@ -326,7 +326,7 @@ public class BattleSystem {
     }
 
     public boolean fleeBattle(){
-        int fleeChance = random.nextInt(100);
+        double fleeChance = random.nextInt(100);
 
         if(fleeChance < GameConstants.FLEE_SUCCESS_CHANCE){
             System.out.println("You fled the battle.");
@@ -352,3 +352,4 @@ public class BattleSystem {
         ui.showDividerLine();
     }
 }
+

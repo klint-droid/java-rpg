@@ -11,7 +11,7 @@ public abstract class Character {
     private double atkPower;
     private double defPower;
     private boolean taunted;
-    private int tauntTurns;
+    private double tauntTurns;
     private boolean defending;
     private CharacterType characterType;
     protected Random random = new Random();
@@ -109,16 +109,16 @@ public abstract class Character {
         this.taunted = taunted;
     }
 
-    public int getTauntTurns() {
+    public double getTauntTurns() {
         return tauntTurns;
     }
 
-    public void setTauntTurns(int tauntTurns) {
+    public void setTauntTurns(double tauntTurns) {
         this.tauntTurns = tauntTurns;
     }
 
     // Common methods
-    protected boolean chanceSuccess(int percent){
+    protected boolean chanceSuccess(double percent){
         return this.random.nextInt(100) < percent;
     }
 
@@ -181,11 +181,11 @@ public abstract class Character {
             + "\nDefense Power: " + defPower;
     }
 
-    protected boolean didMiss(int missChance){
+    protected boolean didMiss(double missChance){
         return random.nextInt(100) < missChance;
     }
 
-    protected boolean didCrit(int critChance){
+    protected boolean didCrit(double critChance){
         return random.nextInt(100) < critChance;
     }
 
@@ -201,3 +201,4 @@ public abstract class Character {
     public abstract BattleResult useSkill(Character target);
 
 }
+

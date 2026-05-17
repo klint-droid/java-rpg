@@ -22,6 +22,7 @@ import inventory.RevivePotion;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics2D;
@@ -32,13 +33,18 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -56,10 +62,10 @@ public class RpgGameUI extends JFrame {
     private ArrayList<Character> players;
     private ArrayList<Enemy> enemies;
     private Inventory inventory;
-    private int currentWave;
-    private int enemiesDefeated;
-    private int gold;
-    private int turnCount;
+    private double currentWave;
+    private double enemiesDefeated;
+    private double gold;
+    private double turnCount;
     private int currentPlayerIndex;
 
     private JLabel waveLabel;
@@ -93,6 +99,7 @@ public class RpgGameUI extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setSize(1100, 760);
         setLocationRelativeTo(null);
+        getContentPane().setBackground(new Color(230, 230, 230));
         setLayout(new BorderLayout(8, 8));
 
         initializeComponents();
@@ -107,91 +114,110 @@ public class RpgGameUI extends JFrame {
         scoreLabel = createHeaderLabel("Enemies Defeated: 0");
         statusLabel = createHeaderLabel("Choose a character to begin.");
 
-        JPanel topBar = new JPanel(new BorderLayout(8, 8));
-        JPanel headerRow = new JPanel(new GridLayout(1, 5, 8, 8));
-        headerRow.add(waveLabel);
-        headerRow.add(goldLabel);
-        headerRow.add(turnLabel);
-        headerRow.add(scoreLabel);
-        headerRow.add(statusLabel);
-        topBar.add(headerRow, BorderLayout.NORTH);
-
-        viewInventoryButton = new JButton("Inventory");
-        viewInventoryButton.addActionListener(e -> openInventoryFrame());
-        viewCharButton = new JButton("Party");
-        viewCharButton.addActionListener(e -> openCharacterSheetFrame());
-        JPanel buttonRow = new JPanel(new GridLayout(1, 2, 8, 8));
-        buttonRow.add(viewInventoryButton);
-        buttonRow.add(viewCharButton);
-        topBar.add(buttonRow, BorderLayout.SOUTH);
+        JPanel topBar = new JPanel(new GridLayout(1, 5, 10, 10));
+        topBar.setBackground(Color.WHITE);
+        topBar.add(waveLabel);
+        topBar.add(goldLabel);
+        topBar.add(turnLabel);
+        topBar.add(scoreLabel);
+        topBar.add(statusLabel);
         add(topBar, BorderLayout.NORTH);
 
         partyPanel = new JPanel();
-        partyPanel.setBorder(BorderFactory.createTitledBorder("Party Status"));
+        partyPanel.setBorder(BorderFactory.createTitledBorder("PARTY"));
         partyPanel.setLayout(new BoxLayout(partyPanel, BoxLayout.Y_AXIS));
-        partyPanel.setPreferredSize(new Dimension(220, 200));
-
-        enemyPanel = new JPanel();
-        enemyPanel.setBorder(BorderFactory.createTitledBorder("Enemies"));
-        enemyPanel.setLayout(new BoxLayout(enemyPanel, BoxLayout.Y_AXIS));
-        enemyPanel.setPreferredSize(new Dimension(320, 250));
+        partyPanel.setBackground(new Color(245, 245, 245));
+        partyPanel.setOpaque(true);
+        partyPanel.setPreferredSize(new Dimension(260, 260));
 
         inventoryPanel = new JPanel();
-        inventoryPanel.setBorder(BorderFactory.createTitledBorder("Inventory (use Inventory button)"));
+        inventoryPanel.setBorder(BorderFactory.createTitledBorder("INVENTORY"));
         inventoryPanel.setLayout(new BoxLayout(inventoryPanel, BoxLayout.Y_AXIS));
-        inventoryPanel.setPreferredSize(new Dimension(220, 120));
+        inventoryPanel.setBackground(new Color(245, 245, 245));
+        inventoryPanel.setOpaque(true);
+        inventoryPanel.setPreferredSize(new Dimension(260, 240));
 
-        JPanel sidePanel = new JPanel();
-        sidePanel.setLayout(new BoxLayout(sidePanel, BoxLayout.Y_AXIS));
-        sidePanel.add(partyPanel);
-        sidePanel.add(enemyPanel);
-        add(sidePanel, BorderLayout.EAST);
+        JPanel leftSide = new JPanel();
+        leftSide.setLayout(new BoxLayout(leftSide, BoxLayout.Y_AXIS));
+        leftSide.setBackground(new Color(232, 232, 232));
+        leftSide.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
+        leftSide.add(partyPanel);
+        leftSide.add(Box.createVerticalStrut(12));
+        leftSide.add(inventoryPanel);
+        add(leftSide, BorderLayout.WEST);
+
+        enemyPanel = new JPanel();
+        enemyPanel.setBorder(BorderFactory.createTitledBorder("ENEMY WAVE 1"));
+        enemyPanel.setLayout(new BoxLayout(enemyPanel, BoxLayout.Y_AXIS));
+        enemyPanel.setBackground(new Color(245, 245, 245));
+        enemyPanel.setOpaque(true);
+        enemyPanel.setPreferredSize(new Dimension(320, 260));
 
         logArea = new JTextArea();
         logArea.setEditable(false);
-        logArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 14));
-        JScrollPane scrollPane = new JScrollPane(logArea);
-        scrollPane.setBorder(BorderFactory.createTitledBorder("Battle Log"));
-        add(scrollPane, BorderLayout.CENTER);
+        logArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 13));
+        logArea.setBackground(new Color(250, 250, 250));
+        logArea.setForeground(Color.BLACK);
+        logArea.setLineWrap(true);
+        logArea.setWrapStyleWord(true);
+        JScrollPane logPane = new JScrollPane(logArea);
+        logPane.setBorder(BorderFactory.createTitledBorder("BATTLE LOG"));
+        logPane.setPreferredSize(new Dimension(320, 340));
+
+        JPanel rightSide = new JPanel(new BorderLayout(10, 10));
+        rightSide.setBackground(new Color(232, 232, 232));
+        rightSide.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
+        rightSide.add(enemyPanel, BorderLayout.NORTH);
+        rightSide.add(logPane, BorderLayout.CENTER);
+        add(rightSide, BorderLayout.EAST);
 
         artArea = new JTextArea();
         artArea.setEditable(false);
-        artArea.setFont(new Font(Font.MONOSPACED, Font.BOLD, 16));
-        artArea.setBackground(Color.BLACK);
-        artArea.setForeground(Color.GREEN);
-        artArea.setBorder(BorderFactory.createTitledBorder("Battle Scene"));
-        artArea.setPreferredSize(new Dimension(440, 240));
+        artArea.setFont(new Font(Font.MONOSPACED, Font.BOLD, 14));
+        artArea.setBackground(new Color(255, 255, 240));
+        artArea.setForeground(Color.DARK_GRAY);
+        artArea.setBorder(BorderFactory.createLineBorder(new Color(180, 180, 180), 2));
+        artArea.setPreferredSize(new Dimension(560, 320));
 
-        JPanel actionPanel = new JPanel(new GridLayout(2, 3, 10, 10));
-        attackButton = createActionButton("Attack", e -> handleAction(1));
-        defendButton = createActionButton("Defend", e -> handleAction(2));
-        skillButton = createActionButton("Skill", e -> handleAction(3));
-        itemButton = createActionButton("Item", e -> openInventoryFrame());
-        fleeButton = createActionButton("Flee", e -> handleAction(5));
-        shopButton = createActionButton("Open Shop", e -> openShopFrame());
-        saveButton = createActionButton("Save Game", e -> saveGame());
-        // allow quick access to inventory and shop from action panel
-        itemButton.setEnabled(true);
-        shopButton.setEnabled(true);
-
-        actionPanel.add(attackButton);
-        actionPanel.add(defendButton);
-        actionPanel.add(skillButton);
-        actionPanel.add(itemButton);
-        actionPanel.add(fleeButton);
-        actionPanel.add(shopButton);
-
-        JPanel leftPanel = new JPanel(new BorderLayout(8, 8));
-        // scene panel supports either ASCII art area or an animated image label
         imageLabel = new JLabel();
         imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        imageLabel.setOpaque(true);
+        imageLabel.setBackground(new Color(255, 255, 240));
         scenePanel = new JPanel(new CardLayout());
         scenePanel.add(artArea, "ASCII");
         scenePanel.add(imageLabel, "IMG");
-        leftPanel.add(scenePanel, BorderLayout.NORTH);
-        leftPanel.add(actionPanel, BorderLayout.CENTER);
-        leftPanel.add(saveButton, BorderLayout.SOUTH);
-        add(leftPanel, BorderLayout.WEST);
+        scenePanel.setBackground(new Color(250, 250, 240));
+        scenePanel.setPreferredSize(new Dimension(560, 320));
+
+        attackButton = createActionButton("Basic Attack", e -> handleAction(1));
+        defendButton = createActionButton("Defend", e -> handleAction(2));
+        skillButton = createActionButton("Use Skill", e -> handleAction(3));
+        itemButton = createActionButton("Use Item", e -> openInventoryFrame());
+        fleeButton = createActionButton("Flee", e -> handleAction(5));
+        shopButton = createActionButton("Open Shop", e -> openShopFrame());
+        saveButton = createActionButton("Save", e -> saveGame());
+
+        JPanel actionPanel = new JPanel(new GridLayout(2, 2, 12, 12));
+        actionPanel.setBackground(Color.WHITE);
+        actionPanel.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
+        actionPanel.add(attackButton);
+        actionPanel.add(skillButton);
+        actionPanel.add(itemButton);
+        actionPanel.add(fleeButton);
+
+        JPanel centerPanel = new JPanel(new BorderLayout(12, 12));
+        centerPanel.setBackground(Color.WHITE);
+        centerPanel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
+        centerPanel.add(scenePanel, BorderLayout.CENTER);
+        centerPanel.add(actionPanel, BorderLayout.SOUTH);
+        add(centerPanel, BorderLayout.CENTER);
+
+        JPanel footerPanel = new JPanel(new GridLayout(1, 2, 10, 10));
+        footerPanel.setBackground(Color.WHITE);
+        footerPanel.setBorder(BorderFactory.createEmptyBorder(0, 8, 8, 8));
+        footerPanel.add(createSmallUtilityButton("Inventory", e -> openInventoryFrame()));
+        footerPanel.add(createSmallUtilityButton("Save", e -> saveGame()));
+        add(footerPanel, BorderLayout.SOUTH);
 
         battleFrames = new String[] {
             "  /\\        /\\  \n ( o >  < o ) \n  \\\\  ^  // \n   \\\\___// \n    /   ",
@@ -223,7 +249,7 @@ public class RpgGameUI extends JFrame {
         if (svc != null) saveButton.setIcon(svc);
     }
 
-    public ImageIcon loadIcon(String filename, int w, int h) {
+    public ImageIcon loadIcon(String filename, double w, double h) {
         try {
             File f = new File("assets" + File.separator + filename);
             Image img;
@@ -231,8 +257,8 @@ public class RpgGameUI extends JFrame {
                 img = ImageIO.read(f);
             } else {
                 // create an in-memory placeholder icon when file is missing
-                int ww = Math.max(1, w > 0 ? w : 32);
-                int hh = Math.max(1, h > 0 ? h : 32);
+                int ww = Math.max(1, w > 0 ? (int) w : 32);
+                int hh = Math.max(1, h > 0 ? (int) h : 32);
                 BufferedImage bi = new BufferedImage(ww, hh, BufferedImage.TYPE_INT_ARGB);
                 Graphics2D g = bi.createGraphics();
                 g.setColor(Color.DARK_GRAY);
@@ -245,7 +271,7 @@ public class RpgGameUI extends JFrame {
                 g.dispose();
                 img = bi;
             }
-            if (w > 0 && h > 0) img = img.getScaledInstance(w, h, Image.SCALE_SMOOTH);
+            if (w > 0 && h > 0) img = img.getScaledInstance((int) w, (int) h, Image.SCALE_SMOOTH);
             return new ImageIcon(img);
         } catch (IOException e) {
             return null;
@@ -255,6 +281,9 @@ public class RpgGameUI extends JFrame {
     // Generate simple placeholder PNG assets if the assets folder is missing images.
     private void ensureAssetsExist() {
         try {
+            // import any user-provided pics from src/pics into assets
+            importProvidedPics();
+
             File dir = new File("assets");
             if (!dir.exists()) dir.mkdirs();
 
@@ -264,27 +293,81 @@ public class RpgGameUI extends JFrame {
             createPlaceholder("skill.png", 24, 24, Color.MAGENTA, "S");
             createPlaceholder("item.png", 24, 24, Color.ORANGE, "I");
             createPlaceholder("flee.png", 24, 24, Color.GRAY, "F");
-            createPlaceholder("shop.png", 24, 24, Color.GREEN, "$");
+            createPlaceholder("shop.png", 24, 24, Color.GREEN, "$" );
             createPlaceholder("save.png", 20, 20, Color.CYAN, "S");
-            // battle.gif placeholder as a static PNG so ImageIcon still shows something
-            createPlaceholder("battle.gif", 440, 240, Color.BLACK, "BATTLE");
+            createPlaceholder("battle.gif", 440, 240, Color.LIGHT_GRAY, "BATTLE");
+            createPlaceholder("battle.png", 560, 320, Color.LIGHT_GRAY, "BATTLE");
+
+            // character portraits and item icons (placeholders if not provided)
+            createPlaceholder("char_warrior.png", 96, 96, new Color(200,120,120), "W");
+            createPlaceholder("char_mage.png", 96, 96, new Color(120,160,220), "M");
+            createPlaceholder("char_archer.png", 96, 96, new Color(160,200,140), "A");
+            createPlaceholder("item_health.png", 32, 32, Color.RED, "H");
+            createPlaceholder("item_mana.png", 32, 32, Color.BLUE, "MP");
+            createPlaceholder("item_mega.png", 32, 32, Color.MAGENTA, "MG");
+            createPlaceholder("item_revive.png", 32, 32, Color.ORANGE, "R");
+            createPlaceholder("item_generic.png", 32, 32, Color.GRAY, "I");
         } catch (Exception ex) {
             // ignore errors creating placeholders
         }
     }
 
-    private void createPlaceholder(String filename, int w, int h, Color bg, String text) {
+    // Copy user-provided pictures from src/pics into assets using expected filenames.
+    private void importProvidedPics() {
+        try {
+            File srcDir = new File("src" + File.separator + "pics");
+            if (!srcDir.exists() || !srcDir.isDirectory()) return;
+
+            File[] files = srcDir.listFiles();
+            if (files == null) return;
+
+            for (File f : files) {
+                String name = f.getName().toLowerCase();
+                String target = null;
+
+                if (name.contains("warrior")) target = "char_warrior.png";
+                else if (name.contains("archer")) target = "char_archer.png";
+                else if (name.contains("mage") && !name.contains("dark")) target = "char_mage.png";
+
+                else if (name.contains("health")) target = "item_health.png";
+                else if (name.contains("mana")) target = "item_mana.png";
+                else if (name.contains("mega")) target = "item_mega.png";
+                else if (name.contains("revive")) target = "item_revive.png";
+
+                else if (name.contains("battle") || name.contains("batle") || name.contains("dungeon")) target = "battle.png";
+
+                if (target != null) {
+                    File out = new File("assets" + File.separator + target);
+                    try {
+                        Path srcPath = f.toPath();
+                        Path dstPath = out.toPath();
+                        // create assets dir if needed
+                        File ad = out.getParentFile(); if (!ad.exists()) ad.mkdirs();
+                        Files.copy(srcPath, dstPath, StandardCopyOption.REPLACE_EXISTING);
+                    } catch (IOException ex) {
+                        // ignore copy errors
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            // ignore any problems importing
+        }
+    }
+
+    private void createPlaceholder(String filename, double w, double h, Color bg, String text) {
         File f = new File("assets" + File.separator + filename);
         if (f.exists()) return;
         try {
-            BufferedImage img = new BufferedImage(Math.max(1, w), Math.max(1, h), BufferedImage.TYPE_INT_ARGB);
+            int imgW = Math.max(1, (int) w);
+            int imgH = Math.max(1, (int) h);
+            BufferedImage img = new BufferedImage(imgW, imgH, BufferedImage.TYPE_INT_ARGB);
             Graphics2D g = img.createGraphics();
             g.setColor(bg);
-            g.fillRect(0,0,w,h);
+            g.fillRect(0,0,imgW,imgH);
             g.setColor(Color.WHITE);
-            g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, Math.max(12, w/4)));
-            int tx = Math.max(4, w/6);
-            int ty = Math.max(14, h/2 + 6);
+            g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, Math.max(12, (int) (w/4))));
+            int tx = Math.max(4, (int) (w/6));
+            int ty = Math.max(14, (int) (h/2 + 6));
             g.drawString(text, tx, ty);
             g.dispose();
             ImageIO.write(img, filename.endsWith(".png") ? "png" : "png", f);
@@ -296,7 +379,10 @@ public class RpgGameUI extends JFrame {
     private JLabel createHeaderLabel(String text) {
         JLabel label = new JLabel(text, SwingConstants.CENTER);
         label.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
-        label.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
+        label.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
+        label.setOpaque(true);
+        label.setBackground(Color.WHITE);
+        label.setForeground(Color.DARK_GRAY);
         return label;
     }
 
@@ -305,6 +391,16 @@ public class RpgGameUI extends JFrame {
         button.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
         button.addActionListener(listener);
         button.setEnabled(false);
+        return button;
+    }
+
+    private JButton createSmallUtilityButton(String text, ActionListener listener) {
+        JButton button = new JButton(text);
+        button.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
+        button.setBackground(new Color(245, 245, 245));
+        button.setForeground(Color.DARK_GRAY);
+        button.setFocusPainted(false);
+        button.addActionListener(listener);
         return button;
     }
 
@@ -360,33 +456,25 @@ public class RpgGameUI extends JFrame {
     }
 
     private void createParty() {
-        while (players.size() < 2) {
-            String[] choices = {"Warrior", "Mage", "Archer"};
-            int classChoice = JOptionPane.showOptionDialog(this,
-                "Choose your character " + (players.size() + 1) + ":",
-                "Character Selection",
-                JOptionPane.DEFAULT_OPTION,
-                JOptionPane.QUESTION_MESSAGE,
-                null,
-                choices,
-                choices[0]);
+        String[] choices = {"Warrior", "Mage", "Archer"};
+        String[][] builtNames = {
+            {"Thorin", "Brakus", "Garr"},
+            {"Elora", "Mirabel", "Selene"},
+            {"Lyra", "Kael", "Rian"}
+        };
 
+        while (players.size() < 2) {
+            int classChoice = showCharacterSelectionDialog(players.size() + 1);
             if (classChoice < 0) {
                 dispose();
                 return;
             }
 
-            String name = JOptionPane.showInputDialog(this, "Enter a name for your " + choices[classChoice] + ":");
-
-            if (name == null || name.trim().isEmpty()) {
-                JOptionPane.showMessageDialog(this, "A name is required.", "Invalid Name", JOptionPane.WARNING_MESSAGE);
-                continue;
-            }
-
+            String name = builtNames[classChoice][players.size() % builtNames[classChoice].length];
             Character newPlayer = switch (classChoice) {
-                case 0 -> new Warrior(name.trim());
-                case 1 -> new Mage(name.trim());
-                default -> new Archer(name.trim());
+                case 0 -> new Warrior(name);
+                case 1 -> new Mage(name);
+                default -> new Archer(name);
             };
 
             players.add(newPlayer);
@@ -396,8 +484,57 @@ public class RpgGameUI extends JFrame {
         }
     }
 
+    private int showCharacterSelectionDialog(int slotNumber) {
+        String[] choices = {"Warrior", "Mage", "Archer"};
+        String[] imgs = {"char_warrior.png", "char_mage.png", "char_archer.png"};
+        String title = "Choose your character " + slotNumber;
+
+        final int[] selectedIndex = {-1};
+
+        JDialog dialog = new JDialog(this, title, true);
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        dialog.setLayout(new BorderLayout(12, 12));
+
+        JLabel prompt = new JLabel("Select your hero by clicking the image", SwingConstants.CENTER);
+        prompt.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
+        prompt.setForeground(Color.WHITE);
+        prompt.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
+        dialog.add(prompt, BorderLayout.NORTH);
+
+        JPanel cardPanel = new JPanel(new GridLayout(1, choices.length, 16, 16));
+        cardPanel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
+        cardPanel.setBackground(new Color(20, 20, 28));
+
+        for (int i = 0; i < choices.length; i++) {
+            int index = i;
+            ImageIcon icon = loadIcon(imgs[i], 160, 160);
+            JButton btn = new JButton(choices[i], icon);
+            btn.setVerticalTextPosition(SwingConstants.BOTTOM);
+            btn.setHorizontalTextPosition(SwingConstants.CENTER);
+            btn.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 15));
+            btn.setForeground(Color.WHITE);
+            btn.setBackground(new Color(45, 45, 55));
+            btn.setFocusPainted(false);
+            btn.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(180, 180, 255), 2),
+                BorderFactory.createEmptyBorder(8, 8, 8, 8)));
+            btn.addActionListener(e -> {
+                selectedIndex[0] = index;
+                dialog.dispose();
+            });
+            cardPanel.add(btn);
+        }
+
+        dialog.add(cardPanel, BorderLayout.CENTER);
+        dialog.setSize(620, 320);
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
+
+        return selectedIndex[0];
+    }
+
     private void startWave() {
-        enemies = createWave(currentWave);
+        enemies = createWave((int) currentWave);
         turnCount = 1;
         currentPlayerIndex = 0;
         appendLog("\n--- Wave " + currentWave + " begins! ---");
@@ -597,7 +734,7 @@ public class RpgGameUI extends JFrame {
     }
 
     private void performFlee(Character active) {
-        int fleeChance = (int) (Math.random() * 100);
+        double fleeChance = (double) (Math.random() * 100);
         if (fleeChance < GameConstants.FLEE_SUCCESS_CHANCE) {
             appendLog(active.getName() + " successfully fled the battle!");
             updateStatus("Fled the battle.");
@@ -633,7 +770,7 @@ public class RpgGameUI extends JFrame {
         String[] options = new String[aliveEnemies.size()];
         for (int i = 0; i < aliveEnemies.size(); i++) {
             Enemy enemy = aliveEnemies.get(i);
-            options[i] = enemy.getName() + " (HP: " + (int) enemy.getHp() + ")";
+            options[i] = enemy.getName() + " (HP: " + (double) enemy.getHp() + ")";
         }
 
         int choice = JOptionPane.showOptionDialog(this,
@@ -660,7 +797,7 @@ public class RpgGameUI extends JFrame {
         String[] options = new String[players.size()];
         for (int i = 0; i < players.size(); i++) {
             Character player = players.get(i);
-            String status = player.isAlive() ? "HP: " + (int) player.getHp() : "DEAD";
+            String status = player.isAlive() ? "HP: " + (double) player.getHp() : "DEAD";
             options[i] = player.getName() + " (" + status + ")";
         }
 
@@ -778,16 +915,18 @@ public class RpgGameUI extends JFrame {
                     postOptions,
                     postOptions[0]);
 
-                if (choice == 0) {
-                    openShop();
-                    // refresh panels after shopping
-                    updatePanels();
-                } else if (choice == 1) {
-                    proceedToNext = true;
-                } else {
-                    // Exit the game window
-                    dispose();
-                    return;
+                switch (choice) {
+                    case 0 -> {
+                        openShop();
+                        // refresh panels after shopping
+                        updatePanels();
+                    }
+                    case 1 -> proceedToNext = true;
+                    default -> {
+                        // Exit the game window
+                        dispose();
+                        return;
+                    }
                 }
             }
 
@@ -865,11 +1004,11 @@ public class RpgGameUI extends JFrame {
     }
 
     // allow ShopFrame to update gold
-    public void setGold(int g) {
+    public void setGold(double g) {
         this.gold = g;
     }
 
-    private void buyItem(Item item, int price) {
+    private void buyItem(Item item, double price) {
         if (gold >= price) {
             inventory.addItem(item);
             gold -= price;
@@ -887,11 +1026,12 @@ public class RpgGameUI extends JFrame {
     }
 
     private void animateBattleScene() {
-        // if there's an animated GIF in assets, use it; otherwise fall back to ASCII animation
+        // if there's a battle image in assets, use it; otherwise fall back to ASCII animation
         CardLayout cl = (CardLayout) scenePanel.getLayout();
-        ImageIcon battleIcon = loadIcon("battle.gif", 440, 240);
+        ImageIcon battleIcon = loadIcon("battle.png", 560, 320);
         if (battleIcon != null) {
             imageLabel.setIcon(battleIcon);
+            imageLabel.setText("");
             cl.show(scenePanel, "IMG");
         } else {
             cl.show(scenePanel, "ASCII");
@@ -915,63 +1055,45 @@ public class RpgGameUI extends JFrame {
             scoreLabel.setText("Enemies Defeated: " + enemiesDefeated);
 
             partyPanel.removeAll();
+            partyPanel.setLayout(new GridLayout(1, Math.max(1, players == null ? 1 : players.size()), 12, 12));
+            partyPanel.setBackground(new Color(18, 18, 28));
             if (players != null) {
                 for (Character player : players) {
-                    JPanel line = new JPanel(new BorderLayout(8, 4));
-                    JLabel label = new JLabel(player.getName() + " (" + player.getClass().getSimpleName() + ")");
-                    JProgressBar hpBar = new JProgressBar(0, Math.max(1, (int) player.getMaxHp()));
-                    hpBar.setValue(Math.max(0, (int) player.getHp()));
-                    hpBar.setStringPainted(true);
-                    hpBar.setString("HP " + (int) player.getHp() + "/" + (int) player.getMaxHp());
-
-                    JProgressBar manaBar = new JProgressBar(0, Math.max(1, (int) player.getMaxMana()));
-                    manaBar.setValue(Math.max(0, (int) player.getMana()));
-                    manaBar.setStringPainted(true);
-                    manaBar.setString("MP " + (int) player.getMana() + "/" + (int) player.getMaxMana());
-
-                    JPanel bars = new JPanel(new GridLayout(2, 1));
-                    bars.add(hpBar);
-                    bars.add(manaBar);
-
-                    line.add(label, BorderLayout.NORTH);
-                    line.add(bars, BorderLayout.CENTER);
-                    partyPanel.add(line);
+                    partyPanel.add(createPlayerCard(player));
                 }
             }
 
             enemyPanel.removeAll();
+            enemyPanel.setLayout(new GridLayout(Math.max(1, enemies == null ? 1 : enemies.size()), 1, 12, 12));
+            enemyPanel.setBackground(new Color(18, 18, 28));
             if (enemies != null) {
                 for (Enemy enemy : enemies) {
-                    JPanel line = new JPanel(new BorderLayout(8, 4));
-                    JLabel label = new JLabel(enemy.getName() + " (" + enemy.getEnemyType() + ")");
-                    JProgressBar bar = new JProgressBar(0, (int) enemy.getMaxHp());
-                    bar.setValue((int) enemy.getHp());
-                    bar.setStringPainted(true);
-                    bar.setString("HP " + (int) enemy.getHp() + "/" + (int) enemy.getMaxHp());
-                    line.add(label, BorderLayout.NORTH);
-                    line.add(bar, BorderLayout.CENTER);
-                    enemyPanel.add(line);
+                    enemyPanel.add(createEnemyCard(enemy));
                 }
             } else {
-                enemyPanel.add(new JLabel("No enemies yet."));
+                JLabel label = new JLabel("No enemies yet.", SwingConstants.CENTER);
+                label.setForeground(Color.WHITE);
+                enemyPanel.add(label);
             }
 
             inventoryPanel.removeAll();
+            inventoryPanel.setLayout(new GridLayout(0, 1, 8, 8));
+            inventoryPanel.setBackground(new Color(18, 18, 28));
             if (inventory == null || inventory.getItems().isEmpty()) {
-                inventoryPanel.add(new JLabel("No items in inventory."));
+                JLabel label = new JLabel("No items in inventory.", SwingConstants.CENTER);
+                label.setForeground(Color.WHITE);
+                inventoryPanel.add(label);
             } else {
-                // group items by class name and show counts (stacking)
                 java.util.Map<String, Integer> counts = new java.util.LinkedHashMap<>();
-                java.util.Map<String, Item> example = new java.util.HashMap<>();
+                java.util.Map<String, Item> example = new java.util.LinkedHashMap<>();
                 for (Item item : inventory.getItems()) {
                     String key = item.getName();
                     counts.put(key, counts.getOrDefault(key, 0) + 1);
                     example.putIfAbsent(key, item);
                 }
-
                 for (java.util.Map.Entry<String, Integer> e : counts.entrySet()) {
                     Item sample = example.get(e.getKey());
-                    inventoryPanel.add(new JLabel(e.getKey() + " x" + e.getValue() + " - " + sample.getDescription()));
+                    inventoryPanel.add(createInventoryItemCard(sample, e.getValue()));
                 }
             }
 
@@ -982,6 +1104,120 @@ public class RpgGameUI extends JFrame {
             inventoryPanel.revalidate();
             inventoryPanel.repaint();
         });
+    }
+
+    private JPanel createPlayerCard(Character player) {
+        String cls = player.getClass().getSimpleName().toLowerCase();
+        ImageIcon portrait = loadIcon("char_" + cls + ".png", 140, 140);
+
+        JLabel img = new JLabel(portrait);
+        img.setHorizontalAlignment(SwingConstants.CENTER);
+        img.setBorder(BorderFactory.createLineBorder(new Color(255, 255, 255, 180), 3));
+
+        JLabel nameLabel = new JLabel(player.getName(), SwingConstants.CENTER);
+        nameLabel.setForeground(Color.WHITE);
+        nameLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
+
+        JProgressBar hpBar = new JProgressBar(0, Math.max(1, (int) player.getMaxHp()));
+        hpBar.setValue(Math.max(0, (int) player.getHp()));
+        hpBar.setStringPainted(true);
+        hpBar.setForeground(new Color(120, 220, 140));
+        hpBar.setString("HP " + (int) player.getHp() + "/" + (int) player.getMaxHp());
+        hpBar.setBackground(new Color(40, 40, 55));
+
+        JProgressBar manaBar = new JProgressBar(0, Math.max(1, (int) player.getMaxMana()));
+        manaBar.setValue(Math.max(0, (int) player.getMana()));
+        manaBar.setStringPainted(true);
+        manaBar.setForeground(new Color(140, 170, 255));
+        manaBar.setString("MP " + (int) player.getMana() + "/" + (int) player.getMaxMana());
+        manaBar.setBackground(new Color(40, 40, 55));
+
+        JPanel statPanel = new JPanel(new GridLayout(2, 1, 4, 4));
+        statPanel.setOpaque(false);
+        statPanel.add(hpBar);
+        statPanel.add(manaBar);
+
+        JPanel header = new JPanel(new BorderLayout());
+        header.setOpaque(false);
+        header.add(nameLabel, BorderLayout.CENTER);
+
+        JPanel card = new JPanel(new BorderLayout(8, 8));
+        card.setBackground(new Color(35, 38, 50));
+        card.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createMatteBorder(0, 0, 0, 0, Color.BLACK),
+            BorderFactory.createEmptyBorder(10, 10, 10, 10)));
+        card.add(header, BorderLayout.NORTH);
+        card.add(img, BorderLayout.CENTER);
+        card.add(statPanel, BorderLayout.SOUTH);
+        return card;
+    }
+
+    private JPanel createEnemyCard(Enemy enemy) {
+        String fileName = enemy.getName().toLowerCase().replaceAll("\\s+", "_") + ".png";
+        ImageIcon portrait = loadIcon(fileName, 140, 140);
+        if (portrait == null || portrait.getIconWidth() <= 0) {
+            portrait = loadIcon("enemy_" + enemy.getEnemyType().toLowerCase().replaceAll("\\s+", "_") + ".png", 140, 140);
+        }
+
+        JLabel img = new JLabel(portrait);
+        img.setHorizontalAlignment(SwingConstants.CENTER);
+        img.setBorder(BorderFactory.createLineBorder(new Color(232, 112, 112), 3));
+
+        JLabel nameLabel = new JLabel(enemy.getName(), SwingConstants.CENTER);
+        nameLabel.setForeground(Color.WHITE);
+        nameLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
+
+        JProgressBar hpBar = new JProgressBar(0, Math.max(1, (int) enemy.getMaxHp()));
+        hpBar.setValue((int) enemy.getHp());
+        hpBar.setStringPainted(true);
+        hpBar.setForeground(new Color(232, 112, 112));
+        hpBar.setString("HP " + (int) enemy.getHp() + "/" + (int) enemy.getMaxHp());
+        hpBar.setBackground(new Color(40, 30, 30));
+
+        JPanel card = new JPanel(new BorderLayout(8, 8));
+        card.setBackground(new Color(45, 30, 30));
+        card.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(180, 80, 80), 2),
+            BorderFactory.createEmptyBorder(10, 10, 10, 10)));
+        card.add(nameLabel, BorderLayout.NORTH);
+        card.add(img, BorderLayout.CENTER);
+        card.add(hpBar, BorderLayout.SOUTH);
+        return card;
+    }
+
+    private JPanel createInventoryItemCard(Item item, int count) {
+        String keyName = item.getName().toLowerCase();
+        String iconFile = "item_generic.png";
+        if (keyName.contains("health")) iconFile = "item_health.png";
+        else if (keyName.contains("mega")) iconFile = "item_mega.png";
+        else if (keyName.contains("mana")) iconFile = "item_mana.png";
+        else if (keyName.contains("revive")) iconFile = "item_revive.png";
+
+        ImageIcon icn = loadIcon(iconFile, 36, 36);
+        JLabel iconLabel = new JLabel(icn);
+        iconLabel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+
+        JLabel text = new JLabel(item.getName() + " x" + count);
+        text.setForeground(Color.WHITE);
+        text.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
+
+        JLabel desc = new JLabel(item.getDescription());
+        desc.setForeground(new Color(190, 190, 210));
+        desc.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 11));
+
+        JPanel textPanel = new JPanel(new BorderLayout(4, 4));
+        textPanel.setOpaque(false);
+        textPanel.add(text, BorderLayout.NORTH);
+        textPanel.add(desc, BorderLayout.SOUTH);
+
+        JPanel card = new JPanel(new BorderLayout(8, 8));
+        card.setBackground(new Color(35, 38, 50));
+        card.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(110, 120, 140), 1),
+            BorderFactory.createEmptyBorder(6, 6, 6, 6)));
+        card.add(iconLabel, BorderLayout.WEST);
+        card.add(textPanel, BorderLayout.CENTER);
+        return card;
     }
 
     private void updateStatus(String text) {
@@ -1010,3 +1246,4 @@ public class RpgGameUI extends JFrame {
         fleeButton.setEnabled(enabled);
     }
 }
+

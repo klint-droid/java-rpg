@@ -6,3 +6,4 @@ public class EmptyInventoryException extends Exception {
         super(message);
     }
 }
+

@@ -5,7 +5,9 @@ import inventory.Inventory;
 import inventory.Item;
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Font;
 import java.awt.GridLayout;
+import javax.swing.BorderFactory;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -49,10 +51,12 @@ public class InventoryFrame extends JFrame {
             @Override
             public Component getListCellRendererComponent(JList<?> listComp, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 JLabel lbl = (JLabel) super.getListCellRendererComponent(listComp, value, index, isSelected, cellHasFocus);
+                lbl.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
+                lbl.setBorder(BorderFactory.createEmptyBorder(4, 6, 4, 6));
                 if (index >= 0 && index < keys.size()) {
                     String name = keys.get(index);
                     String iconFile = name.toLowerCase().replaceAll("\\s+", "_") + ".png";
-                    ImageIcon ic = parent.loadIcon(iconFile, 20, 20);
+                    ImageIcon ic = parent.loadIcon(iconFile, 28, 28);
                     if (ic != null) lbl.setIcon(ic);
                 } else {
                     lbl.setIcon(null);
@@ -119,3 +123,4 @@ public class InventoryFrame extends JFrame {
         }
     }
 }
+

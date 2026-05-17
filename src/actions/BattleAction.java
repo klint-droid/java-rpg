@@ -5,3 +5,4 @@ import results.BattleResult;
 public interface BattleAction {
     BattleResult execute();
 }
+

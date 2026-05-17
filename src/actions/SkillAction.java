@@ -16,3 +16,4 @@ public class SkillAction implements BattleAction {
        return user.useSkill(target);
     }
 }
+

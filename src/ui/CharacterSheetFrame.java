@@ -25,10 +25,11 @@ public class CharacterSheetFrame extends JFrame {
         JPanel p = new JPanel(new GridLayout(5,1));
         p.add(new JLabel("Name: " + character.getName()));
         p.add(new JLabel("Class: " + character.getClass().getSimpleName()));
-        p.add(new JLabel("HP: " + (int)character.getHp() + "/" + (int)character.getMaxHp()));
-        p.add(new JLabel("MP: " + (int)character.getMana() + "/" + (int)character.getMaxMana()));
-        p.add(new JLabel("ATK: " + (int)character.getAtkPower() + "  DEF: " + (int)character.getDefPower()));
+        p.add(new JLabel("HP: " + (double)character.getHp() + "/" + (double)character.getMaxHp()));
+        p.add(new JLabel("MP: " + (double)character.getMana() + "/" + (double)character.getMaxMana()));
+        p.add(new JLabel("ATK: " + (double)character.getAtkPower() + "  DEF: " + (double)character.getDefPower()));
 
         add(p, BorderLayout.CENTER);
     }
 }
+

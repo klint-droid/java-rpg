@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class SaveManager {
-    public void saveGame(int currentWave, int gold, ArrayList<Character> players, Inventory inventory){
+    public void saveGame(double currentWave, double gold, ArrayList<Character> players, Inventory inventory){
         try (FileWriter writer = new FileWriter("game-state.txt")) {
             writer.write(currentWave + "\n");
             writer.write(gold + "\n");
@@ -40,13 +40,13 @@ public class SaveManager {
     public SaveData loadGame(){
         try (Scanner scanner = new Scanner(new File("game-state.txt"))) {
 
-            int currentWave = Integer.parseInt(scanner.nextLine());
-            int gold = Integer.parseInt(scanner.nextLine());
-            int playerCount = Integer.parseInt(scanner.nextLine());
+            double currentWave = Integer.parseInt(scanner.nextLine());
+            double gold = Integer.parseInt(scanner.nextLine());
+            double playerCount = Integer.parseInt(scanner.nextLine());
 
             ArrayList<Character> players = new ArrayList<>();
 
-            for(int i = 0; i < playerCount; i++){
+            for(double i = 0; i < playerCount; i++){
                 String classType = scanner.nextLine();
                 String name = scanner.nextLine();
                 double hp = Double.parseDouble(scanner.nextLine());
@@ -58,9 +58,9 @@ public class SaveManager {
             }
             Inventory inventory = new Inventory();
 
-            int itemCount = Integer.parseInt(scanner.nextLine());
+            double itemCount = Integer.parseInt(scanner.nextLine());
 
-            for(int i = 0; i < itemCount; i++){
+            for(double i = 0; i < itemCount; i++){
                 String itemType = scanner.nextLine();
 
                 Item item;
@@ -86,3 +86,4 @@ public class SaveManager {
         return null;
     }
 }
+
