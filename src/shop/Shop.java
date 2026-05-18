@@ -1,4 +1,5 @@
 package shop;
+
 import java.util.Scanner;
 
 import constants.GameConstants;
@@ -6,7 +7,13 @@ import inventory.Inventory;
 import inventory.MegaPotion;
 import inventory.HealthPotion;
 import inventory.RevivePotion;
+import inventory.ManaPotion;
+import game.GameState;
 
+/**
+ * Console-mode shop. Uses ShopService for purchase logic
+ * to eliminate duplicated buy methods.
+ */
 public class Shop {
     private Inventory inventory;
     private Scanner scanner;
@@ -15,22 +22,27 @@ public class Shop {
     public Shop(Inventory inventory, double gold, Scanner scanner) {
         this.inventory = inventory;
         this.gold = gold;
-
         this.scanner = scanner;
     }
 
     public double openShop(){
+        // Create a temporary GameState to use ShopService
+        GameState tempState = new GameState();
+        tempState.setGold(gold);
+        tempState.setInventory(inventory);
+
         boolean shopping = true;
 
         while (shopping) {
             System.out.println("\n === SHOP === \n");
-            System.out.println("Gold: " + gold);
-            System.out.println("1. Health Potion - 20 gold");
-            System.out.println("2. Mega Potion - 50 gold");
-            System.out.println("3. Revive Potion - 100 gold");
+            System.out.println("Gold: " + tempState.getGold());
+            System.out.println("1. Health Potion - " + GameConstants.HEALTH_POTION_PRICE + " gold");
+            System.out.println("2. Mega Potion - " + GameConstants.MEGA_POTION_PRICE + " gold");
+            System.out.println("3. Mana Potion - " + GameConstants.MANA_POTION_PRICE + " gold");
+            System.out.println("4. Revive Potion - " + GameConstants.REVIVE_POTION_PRICE + " gold");
 
-            System.out.println("4. Exit Shop");
-            System.out.println("5. Save Game");
+            System.out.println("5. Exit Shop");
+            System.out.println("6. Save Game");
 
             System.out.println("Enter your choice: ");
 
@@ -45,18 +57,21 @@ public class Shop {
 
             switch (choice) {
                 case 1:
-                    buyHealthPotion();
+                    buyItem(new HealthPotion(), GameConstants.HEALTH_POTION_PRICE, tempState);
                     break;
                 case 2:
-                    buyMegaPotion();
+                    buyItem(new MegaPotion(), GameConstants.MEGA_POTION_PRICE, tempState);
                     break;
-                case 3: 
-                    buyRevivePotion();
+                case 3:
+                    buyItem(new ManaPotion(), GameConstants.MANA_POTION_PRICE, tempState);
                     break;
                 case 4:
-                    shopping = false;
+                    buyItem(new RevivePotion(), GameConstants.REVIVE_POTION_PRICE, tempState);
                     break;
                 case 5:
+                    shopping = false;
+                    break;
+                case 6:
                     System.out.println("Saving game...");
                     break;
                 default:
@@ -65,37 +80,14 @@ public class Shop {
             }
         }
 
-        return gold;
+        return tempState.getGold();
     }
 
-    private void buyHealthPotion(){
-        if(gold >= GameConstants.HEALTH_POTION_PRICE){
-            inventory.addItem(new HealthPotion());
-            gold -= 20;
-            System.out.println("You bought a Health Potion for 20 gold.");
+    private void buyItem(inventory.Item item, double price, GameState tempState) {
+        if (ShopService.buyItem(item, price, tempState)) {
+            System.out.println("You bought a " + item.getName() + " for " + price + " gold.");
         } else {
-            System.out.println("You don't have enough gold to buy a Health Potion.");
-        }
-    }
-
-    private void buyMegaPotion(){
-        if(gold >= GameConstants.MEGA_POTION_PRICE){
-            inventory.addItem(new MegaPotion());
-            gold -= 50;
-            System.out.println("You bought a Mega Potion for 50 gold.");
-        } else {
-            System.out.println("You don't have enough gold to buy a Mega Potion.");
-        }
-    }
-
-    private void buyRevivePotion(){
-        if(gold >= GameConstants.REVIVE_POTION_PRICE){
-            inventory.addItem(new RevivePotion());
-            gold -= 100;
-            System.out.println("You bought a Revive Potion for 100 gold.");
-        } else {
-            System.out.println("You don't have enough gold to buy a Revive Potion.");
+            System.out.println("You don't have enough gold to buy a " + item.getName() + ".");
         }
     }
 }
-

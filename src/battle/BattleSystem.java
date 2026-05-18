@@ -1,4 +1,5 @@
 package battle;
+
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.Scanner;
@@ -15,6 +16,10 @@ import actions.BattleAction;
 import actions.DefendAction;
 import actions.SkillAction;
 
+/**
+ * Console-mode battle system. Uses shared hasLivingPlayers/hasLivingEnemies
+ * helpers for consistency, while keeping the scanner-based interaction intact.
+ */
 public class BattleSystem {
     private ArrayList<Character> players;   
     private ArrayList<Enemy> enemies;
@@ -352,4 +357,3 @@ public class BattleSystem {
         ui.showDividerLine();
     }
 }
-

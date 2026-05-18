@@ -1,17 +1,16 @@
 package ui;
 
 import inventory.EmptyInventoryException;
-import inventory.Inventory;
-import inventory.Item;
+import inventory.InventoryService;
+import inventory.StackedItem;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.GridLayout;
-import javax.swing.BorderFactory;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
+import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
@@ -23,18 +22,24 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
+/**
+ * Standalone inventory window. Uses InventoryService for item stacking
+ * instead of duplicating the LinkedHashMap grouping logic.
+ */
 public class InventoryFrame extends JFrame {
     private static final long serialVersionUID = 1L;
-    private final Inventory inventory;
+    private final InventoryService inventoryService;
+    private final AssetManager assetManager;
     private final RpgGameUI parent;
 
     private DefaultListModel<String> model;
     private JList<String> list;
     private List<String> keys;
 
-    public InventoryFrame(Inventory inventory, RpgGameUI parent) {
+    public InventoryFrame(InventoryService inventoryService, AssetManager assetManager, RpgGameUI parent) {
         super("Inventory");
-        this.inventory = inventory;
+        this.inventoryService = inventoryService;
+        this.assetManager = assetManager;
         this.parent = parent;
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setSize(360, 420);
@@ -56,7 +61,7 @@ public class InventoryFrame extends JFrame {
                 if (index >= 0 && index < keys.size()) {
                     String name = keys.get(index);
                     String iconFile = name.toLowerCase().replaceAll("\\s+", "_") + ".png";
-                    ImageIcon ic = parent.loadIcon(iconFile, 28, 28);
+                    ImageIcon ic = assetManager.loadIcon(iconFile, 28, 28);
                     if (ic != null) lbl.setIcon(ic);
                 } else {
                     lbl.setIcon(null);
@@ -77,13 +82,7 @@ public class InventoryFrame extends JFrame {
             characters.Character target = parent.choosePlayerTargetDialog();
             if (target == null) return;
             try {
-                int removeIndex = -1;
-                List<Item> items = inventory.getItems();
-                for (int i = 0; i < items.size(); i++) {
-                    if (items.get(i).getName().equals(key)) { removeIndex = i; break; }
-                }
-                if (removeIndex == -1) throw new IndexOutOfBoundsException();
-                inventory.useItem(removeIndex, target);
+                inventoryService.useItemByName(key, target);
                 parent.appendLogPublic("Used " + key + " on " + target.getName() + " (from Inventory window)");
                 parent.refreshPanels();
                 updateList();
@@ -97,7 +96,7 @@ public class InventoryFrame extends JFrame {
         JButton close = new JButton("Close");
         close.addActionListener(e -> dispose());
 
-        JPanel bottom = new JPanel(new GridLayout(1,2,8,8));
+        JPanel bottom = new JPanel(new GridLayout(1, 2, 8, 8));
         bottom.add(useBtn);
         bottom.add(close);
 
@@ -109,18 +108,10 @@ public class InventoryFrame extends JFrame {
     private void updateList() {
         model.clear();
         keys = new ArrayList<>();
-        Map<String, Integer> counts = new LinkedHashMap<>();
-        Map<String, Item> example = new LinkedHashMap<>();
-        for (Item it : inventory.getItems()) {
-            counts.put(it.getName(), counts.getOrDefault(it.getName(), 0) + 1);
-            example.putIfAbsent(it.getName(), it);
-        }
-        for (Map.Entry<String,Integer> e : counts.entrySet()) {
-            String name = e.getKey();
-            Item sample = example.get(name);
-            model.addElement(name + " x" + e.getValue() + " - " + sample.getDescription());
-            keys.add(name);
+        List<StackedItem> stacked = inventoryService.getStackedItems();
+        for (StackedItem si : stacked) {
+            model.addElement(si.getDisplayText());
+            keys.add(si.getName());
         }
     }
 }
-

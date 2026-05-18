@@ -1,4 +1,5 @@
 package game;
+
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -11,22 +12,22 @@ import constants.GameConstants;
 import factory.CharacterFactory;
 import ui.ConsoleUI;
 
+/**
+ * Console-mode game manager. Now uses GameState and WaveFactory
+ * to eliminate duplicated state fields and wave creation logic.
+ */
 public class GameManager {
-    private ArrayList<Character> players;
-    private Inventory inventory;
-    private double currentWave;
-    private double enemiesDefeated;
-    private double gold;
+    private GameState state;
     private Scanner scanner;
     private ConsoleUI ui;
 
     public GameManager(Scanner scanner) {
-        players = new ArrayList<>();
-        inventory = new Inventory();
-        inventory.addStarterItems();
-        currentWave = 1;
-        enemiesDefeated = 0;
-        gold = GameConstants.STARTING_GOLD;
+        state = new GameState();
+        state.setInventory(new Inventory());
+        state.getInventory().addStarterItems();
+        state.setCurrentWave(1);
+        state.setEnemiesDefeated(0);
+        state.setGold(GameConstants.STARTING_GOLD);
         this.scanner = scanner;
         this.ui = new ConsoleUI();
     }
@@ -64,7 +65,7 @@ public class GameManager {
 
             boolean duplicate = false;
 
-            for(Character player : players){
+            for(Character player : state.getPlayers()){
                 if(player.getCharacterType() == newCharacter.getCharacterType()){
                     duplicate = true;
                     break;
@@ -76,7 +77,7 @@ public class GameManager {
                 continue;
             }
 
-            players.add(newCharacter);
+            state.getPlayers().add(newCharacter);
 
             System.out.println(name + " added to party.");
 
@@ -87,45 +88,45 @@ public class GameManager {
 
         System.out.println("\n Your party: ");
 
-        for(Character player : players){
+        for(Character player : state.getPlayers()){
             System.out.println("- " + player.getName() + " (" + player.getClass().getSimpleName() + ")");
         }
     }
 
     public void startGame(){
-        if(players.isEmpty()){
+        if(state.getPlayers().isEmpty()){
             createParty();
         }
 
-        while(currentWave <= 4 && hasLivingPlayers()){
-            System.out.println("====== Wave " + currentWave + " =======" + "\n");
-            ArrayList<Enemy> enemies = createWave((int) currentWave);
+        while(state.getCurrentWave() <= 4 && state.hasLivingPlayers()){
+            System.out.println("====== Wave " + state.getCurrentWave() + " =======" + "\n");
+            ArrayList<Enemy> enemies = WaveFactory.createWave((int) state.getCurrentWave());
 
             double enemyCount = enemies.size();
 
-            BattleSystem battle = new BattleSystem(players, enemies, inventory, scanner, ui);
+            BattleSystem battle = new BattleSystem(state.getPlayers(), enemies, state.getInventory(), scanner, ui);
 
             battle.startBattle();
 
-            enemiesDefeated += enemyCount;
+            state.addEnemiesDefeated(enemyCount);
 
-            if(hasLivingPlayers()){
+            if(state.hasLivingPlayers()){
                 System.out.println("\n==================");
-                System.out.println("        WAVE " + currentWave + " CLEARED!!!");
-                System.out.println("Enemies Defeated: " + enemiesDefeated);
+                System.out.println("        WAVE " + state.getCurrentWave() + " CLEARED!!!");
+                System.out.println("Enemies Defeated: " + state.getEnemiesDefeated());
                 System.out.println("==================");
-                gold += GameConstants.WAVE_REWARD;
+                state.addGold(GameConstants.WAVE_REWARD);
                 
                 System.out.println("You earn 100 gold!");
 
-                System.out.println("Current Gold: " + gold);
+                System.out.println("Current Gold: " + state.getGold());
 
-                Shop shop = new Shop(inventory, gold, scanner);
-                gold = shop.openShop();
+                Shop shop = new Shop(state.getInventory(), state.getGold(), scanner);
+                state.setGold(shop.openShop());
 
                 SaveManager saveManager = new SaveManager();
-                saveManager.saveGame(currentWave, gold, players, inventory);
-                currentWave++;
+                saveManager.saveGame(state.getCurrentWave(), state.getGold(), state.getPlayers(), state.getInventory());
+                state.setCurrentWave(state.getCurrentWave() + 1);
             }       
         }
 
@@ -133,60 +134,27 @@ public class GameManager {
         displayFinalResult();
     }
 
-    private ArrayList<Enemy> createWave(int wave){
-        ArrayList<Enemy> enemies = new ArrayList<>();
-
-        switch (wave) {
-            case 1:
-                enemies.add(new Enemy("Goblin", "Goblin", 120, 20, 5));
-                break;
-            case 2:
-                enemies.add(new Enemy("Orc", "Orc", 150, 30, 10));
-                enemies.add(new Enemy("Goblin Archer", "Goblin", 200, 25, 5));
-                break;
-            case 3:
-                enemies.add(new Enemy("Dark Mage", "Dark Mage", 300, 40, 8));
-                break;
-            case 4:
-                enemies.add(new Enemy("Dragon", "Boss", 350, 100, 20));
-                break;
-            default:
-                break;
-        }
-
-        return enemies;
-    }
-
-    private boolean hasLivingPlayers() {
-        for (Character player : players) {
-            if (player.isAlive()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private void displayFinalResult(){
         System.out.println("==== GAME OVER ====" + "\n");
         
-        if(hasLivingPlayers()){
+        if(state.hasLivingPlayers()){
             System.out.println("VICTORY");
         } else {
             System.out.println("DEFEAT");
         }
 
-        System.out.println("Waves Cleared: " + (currentWave - 1));
-        System.out.println("Enemies Defeated: " + enemiesDefeated);
-        System.out.println("Gold Earned: " + gold);
+        System.out.println("Waves Cleared: " + (state.getCurrentWave() - 1));
+        System.out.println("Enemies Defeated: " + state.getEnemiesDefeated());
+        System.out.println("Gold Earned: " + state.getGold());
 
         System.out.println("==================");
     }
     
     public void loadSaveGame(SaveData saveData){
-        currentWave = saveData.getCurrentWave();
-        gold = saveData.getGold();
-        players = saveData.getPlayers();
-        inventory = saveData.getInventory();
+        state.setCurrentWave(saveData.getCurrentWave());
+        state.setGold(saveData.getGold());
+        state.setPlayers(saveData.getPlayers());
+        state.setInventory(saveData.getInventory());
     }
 
     public void startLoadedGame(){
@@ -194,4 +162,3 @@ public class GameManager {
         startGame();
     }
 }
-

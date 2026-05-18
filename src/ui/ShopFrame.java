@@ -1,11 +1,14 @@
 package ui;
 
 import constants.GameConstants;
+import game.GameState;
 import inventory.HealthPotion;
-import inventory.Inventory;
+import inventory.Item;
 import inventory.ManaPotion;
 import inventory.MegaPotion;
 import inventory.RevivePotion;
+import shop.ShopService;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
@@ -18,17 +21,21 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+/**
+ * Standalone shop window. Uses ShopService for purchase logic
+ * instead of duplicating buy code.
+ */
 public class ShopFrame extends JFrame {
     private static final long serialVersionUID = 1L;
-    private final Inventory inventory;
+    private final GameState state;
+    private final AssetManager assetManager;
     private final RpgGameUI parent;
-    private double gold;
     private JLabel goldLabel;
 
-    public ShopFrame(Inventory inventory, double gold, RpgGameUI parent) {
+    public ShopFrame(GameState state, AssetManager assetManager, RpgGameUI parent) {
         super("Shop");
-        this.inventory = inventory;
-        this.gold = gold;
+        this.state = state;
+        this.assetManager = assetManager;
         this.parent = parent;
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setSize(340, 260);
@@ -37,7 +44,7 @@ public class ShopFrame extends JFrame {
     }
 
     private void initUI() {
-        JPanel panel = new JPanel(new GridLayout(5,1,6,6));
+        JPanel panel = new JPanel(new GridLayout(5, 1, 6, 6));
         JButton h = createShopButton("Health Potion", GameConstants.HEALTH_POTION_PRICE, "item_health.png");
         JButton m = createShopButton("Mega Potion", GameConstants.MEGA_POTION_PRICE, "item_mega.png");
         JButton mp = createShopButton("Mana Potion", GameConstants.MANA_POTION_PRICE, "item_mana.png");
@@ -56,16 +63,15 @@ public class ShopFrame extends JFrame {
         panel.add(r);
         panel.add(close);
 
-        goldLabel = new JLabel("Gold: " + gold, JLabel.CENTER);
+        goldLabel = new JLabel("Gold: " + state.getGold(), JLabel.CENTER);
         goldLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
         goldLabel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
         add(goldLabel, BorderLayout.NORTH);
         add(panel, BorderLayout.CENTER);
-
     }
 
     private JButton createShopButton(String label, double price, String iconFile) {
-        ImageIcon icon = parent.loadIcon(iconFile, 32, 32);
+        ImageIcon icon = assetManager.loadIcon(iconFile, 32, 32);
         JButton button = new JButton(label + " - " + price + " gold", icon);
         button.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
         button.setHorizontalAlignment(JButton.LEFT);
@@ -78,17 +84,13 @@ public class ShopFrame extends JFrame {
         return button;
     }
 
-    private void buy(inventory.Item item, double price) {
-        if (gold >= price) {
-            inventory.addItem(item);
-            gold -= price;
-            goldLabel.setText("Gold: " + gold);
+    private void buy(Item item, double price) {
+        if (ShopService.buyItem(item, price, state)) {
+            goldLabel.setText("Gold: " + state.getGold());
             JOptionPane.showMessageDialog(this, "Bought " + item.getName());
-            parent.setGold(gold);
             parent.refreshPanels();
         } else {
             JOptionPane.showMessageDialog(this, "Not enough gold.");
         }
     }
 }
-
