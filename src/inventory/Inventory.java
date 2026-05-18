@@ -30,7 +30,7 @@ public class Inventory {
         }
     }
 
-    public void useItem(int index, Character target) throws EmptyInventoryException{
+    public boolean useItem(int index, Character target) throws EmptyInventoryException{
 
         if(items.isEmpty()){
             throw new EmptyInventoryException("Inventory is empty.");
@@ -38,9 +38,13 @@ public class Inventory {
 
         Item item = items.get(index);
 
-        item.use(target);
+        boolean success = item.use(target);
 
-        items.remove(index);
+        if (success) {
+            items.remove(index);
+        }
+
+        return success;
     }
 
     public boolean isEmpty(){

@@ -2,11 +2,9 @@ package inventory;
 
 import characters.Character;
 
-public class MegaPotion
-extends Item {
+public class MegaPotion extends Item {
 
     public MegaPotion(){
-
         super(
             "Mega Potion",
             "Restores 50 HP",
@@ -15,20 +13,13 @@ extends Item {
     }
 
     @Override
-    public void use(Character target){
-
+    public boolean use(Character target){
         if(!target.isAlive()){
-
-            System.out.println(
-                "Character is dead."
-            );
-
-            return;
+            System.out.println("Character is dead.");
+            return false;
         }
 
-        target.heal(
-            getEffectValue()
-        );
+        target.heal(getEffectValue());
 
         System.out.println(
             target.getName()
@@ -36,5 +27,6 @@ extends Item {
             + getEffectValue()
             + " HP."
         );
+        return true;
     }
 }

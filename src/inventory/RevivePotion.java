@@ -6,15 +6,15 @@ public class RevivePotion extends Item {
     }
 
     @Override
-    public void use (Character target) {
+    public boolean use (Character target) {
         if(target.isAlive()){
             System.out.println("Character is already alive.");
-            return;
+            return false;
         }
         double reviveHp = target.getMaxHp() * 0.5;
         target.setHp(reviveHp);
         System.out.println(target.getName() + " has been revived with " + reviveHp + " HP.");
+        return true;
     }
     
 }
-

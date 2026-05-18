@@ -44,12 +44,12 @@ public class InventoryService {
 
     /**
      * Uses the first item matching the given name on the target character.
-     * Returns the name of the item used.
+     * Returns true if the item was successfully used and consumed.
      *
      * @throws EmptyInventoryException if inventory is empty
      * @throws IndexOutOfBoundsException if no item with that name exists
      */
-    public String useItemByName(String itemName, Character target)
+    public boolean useItemByName(String itemName, Character target)
             throws EmptyInventoryException {
         if (inventory.isEmpty()) {
             throw new EmptyInventoryException("Inventory is empty.");
@@ -68,8 +68,7 @@ public class InventoryService {
             throw new IndexOutOfBoundsException("Item not found: " + itemName);
         }
 
-        inventory.useItem(removeIndex, target);
-        return itemName;
+        return inventory.useItem(removeIndex, target);
     }
 
     public Inventory getInventory() {

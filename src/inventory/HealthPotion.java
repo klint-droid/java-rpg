@@ -6,13 +6,13 @@ public class HealthPotion extends Item{
     }
 
     @Override
-    public void use(Character target) {
+    public boolean use(Character target) {
         if(!target.isAlive()){
             System.out.println("Character is dead.");
-            return;
+            return false;
         }
         target.heal(getEffectValue());
         System.out.println(target.getName() + " healed for " + getEffectValue() + " HP.");
+        return true;
     }
 }
-

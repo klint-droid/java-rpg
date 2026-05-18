@@ -8,14 +8,14 @@ public class ManaPotion extends Item {
     }
 
     @Override
-    public void use(Character target) {
+    public boolean use(Character target) {
         if (!target.isAlive()) {
             System.out.println("Character is dead.");
-            return;
+            return false;
         }
 
         target.regenerateMana(getEffectValue());
         System.out.println(target.getName() + " restored " + getEffectValue() + " MP.");
+        return true;
     }
 }
-

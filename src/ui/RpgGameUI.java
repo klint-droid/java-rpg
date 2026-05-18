@@ -76,7 +76,7 @@ public class RpgGameUI extends JFrame implements
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setSize(1100, 760);
         setLocationRelativeTo(null);
-        getContentPane().setBackground(new Color(230, 230, 230));
+        getContentPane().setBackground(new Color(18, 18, 28));
         setLayout(new BorderLayout(8, 8));
 
         assetManager = new AssetManager();
@@ -91,14 +91,22 @@ public class RpgGameUI extends JFrame implements
     // ========================= LAYOUT SETUP =========================
 
     private void initializeComponents() {
+        Color darkBg = new Color(18, 18, 28);
+        Color panelBg = new Color(24, 26, 36);
+        Color headerBg = new Color(30, 32, 45);
+        Color headerBorder = new Color(60, 65, 90);
+        Color goldText = new Color(255, 215, 80);
+        Color textColor = new Color(220, 225, 240);
+
         waveLabel = createHeaderLabel("Wave: 1");
         goldLabel = createHeaderLabel("Gold: 0");
         turnLabel = createHeaderLabel("Turn: 1");
         scoreLabel = createHeaderLabel("Enemies Defeated: 0");
         statusLabel = createHeaderLabel("Choose a character to begin.");
 
-        JPanel topBar = new JPanel(new GridLayout(1, 5, 10, 10));
-        topBar.setBackground(Color.WHITE);
+        JPanel topBar = new JPanel(new GridLayout(1, 5, 6, 6));
+        topBar.setBackground(darkBg);
+        topBar.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
         topBar.add(waveLabel);
         topBar.add(goldLabel);
         topBar.add(turnLabel);
@@ -107,48 +115,66 @@ public class RpgGameUI extends JFrame implements
         add(topBar, BorderLayout.NORTH);
 
         partyPanel = new JPanel();
-        partyPanel.setBorder(BorderFactory.createTitledBorder("PARTY"));
+        partyPanel.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(new Color(80, 130, 220, 100), 2),
+            "\u2694 PARTY", javax.swing.border.TitledBorder.LEFT,
+            javax.swing.border.TitledBorder.TOP,
+            new Font(Font.SANS_SERIF, Font.BOLD, 13), goldText));
         partyPanel.setLayout(new BoxLayout(partyPanel, BoxLayout.Y_AXIS));
-        partyPanel.setBackground(new Color(245, 245, 245));
+        partyPanel.setBackground(panelBg);
         partyPanel.setOpaque(true);
-        partyPanel.setPreferredSize(new Dimension(260, 260));
+        partyPanel.setPreferredSize(new Dimension(280, 280));
 
         inventoryPanel = new JPanel();
-        inventoryPanel.setBorder(BorderFactory.createTitledBorder("INVENTORY"));
+        inventoryPanel.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(new Color(180, 140, 60, 100), 2),
+            "\uD83C\uDF92 INVENTORY", javax.swing.border.TitledBorder.LEFT,
+            javax.swing.border.TitledBorder.TOP,
+            new Font(Font.SANS_SERIF, Font.BOLD, 13), goldText));
         inventoryPanel.setLayout(new BoxLayout(inventoryPanel, BoxLayout.Y_AXIS));
-        inventoryPanel.setBackground(new Color(245, 245, 245));
+        inventoryPanel.setBackground(panelBg);
         inventoryPanel.setOpaque(true);
-        inventoryPanel.setPreferredSize(new Dimension(260, 240));
+        inventoryPanel.setPreferredSize(new Dimension(280, 240));
 
         JPanel leftSide = new JPanel();
         leftSide.setLayout(new BoxLayout(leftSide, BoxLayout.Y_AXIS));
-        leftSide.setBackground(new Color(232, 232, 232));
+        leftSide.setBackground(darkBg);
         leftSide.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
         leftSide.add(partyPanel);
-        leftSide.add(Box.createVerticalStrut(12));
+        leftSide.add(Box.createVerticalStrut(10));
         leftSide.add(inventoryPanel);
         add(leftSide, BorderLayout.WEST);
 
         enemyPanel = new JPanel();
-        enemyPanel.setBorder(BorderFactory.createTitledBorder("ENEMY WAVE 1"));
+        enemyPanel.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(new Color(200, 60, 60, 100), 2),
+            "\uD83D\uDC80 ENEMIES", javax.swing.border.TitledBorder.LEFT,
+            javax.swing.border.TitledBorder.TOP,
+            new Font(Font.SANS_SERIF, Font.BOLD, 13), new Color(255, 100, 100)));
         enemyPanel.setLayout(new BoxLayout(enemyPanel, BoxLayout.Y_AXIS));
-        enemyPanel.setBackground(new Color(245, 245, 245));
+        enemyPanel.setBackground(panelBg);
         enemyPanel.setOpaque(true);
-        enemyPanel.setPreferredSize(new Dimension(320, 260));
+        enemyPanel.setPreferredSize(new Dimension(340, 280));
 
         logArea = new JTextArea();
         logArea.setEditable(false);
         logArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 13));
-        logArea.setBackground(new Color(250, 250, 250));
-        logArea.setForeground(Color.BLACK);
+        logArea.setBackground(new Color(20, 22, 32));
+        logArea.setForeground(new Color(200, 210, 230));
+        logArea.setCaretColor(new Color(200, 210, 230));
         logArea.setLineWrap(true);
         logArea.setWrapStyleWord(true);
         JScrollPane logPane = new JScrollPane(logArea);
-        logPane.setBorder(BorderFactory.createTitledBorder("BATTLE LOG"));
-        logPane.setPreferredSize(new Dimension(320, 340));
+        logPane.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(new Color(60, 65, 90), 1),
+            "\uD83D\uDCDC BATTLE LOG", javax.swing.border.TitledBorder.LEFT,
+            javax.swing.border.TitledBorder.TOP,
+            new Font(Font.SANS_SERIF, Font.BOLD, 13), goldText));
+        logPane.setPreferredSize(new Dimension(340, 340));
+        logPane.getViewport().setBackground(new Color(20, 22, 32));
 
         JPanel rightSide = new JPanel(new BorderLayout(10, 10));
-        rightSide.setBackground(new Color(232, 232, 232));
+        rightSide.setBackground(darkBg);
         rightSide.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
         rightSide.add(enemyPanel, BorderLayout.NORTH);
         rightSide.add(logPane, BorderLayout.CENTER);
@@ -157,46 +183,48 @@ public class RpgGameUI extends JFrame implements
         artArea = new JTextArea();
         artArea.setEditable(false);
         artArea.setFont(new Font(Font.MONOSPACED, Font.BOLD, 14));
-        artArea.setBackground(new Color(255, 255, 240));
-        artArea.setForeground(Color.DARK_GRAY);
-        artArea.setBorder(BorderFactory.createLineBorder(new Color(180, 180, 180), 2));
+        artArea.setBackground(new Color(20, 22, 32));
+        artArea.setForeground(new Color(180, 190, 210));
+        artArea.setBorder(BorderFactory.createLineBorder(new Color(60, 65, 90), 2));
         artArea.setPreferredSize(new Dimension(560, 320));
 
         imageLabel = new JLabel();
         imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
         imageLabel.setOpaque(true);
-        imageLabel.setBackground(new Color(255, 255, 240));
+        imageLabel.setBackground(new Color(20, 22, 32));
         scenePanel = new JPanel(new CardLayout());
         scenePanel.add(artArea, "ASCII");
         scenePanel.add(imageLabel, "IMG");
-        scenePanel.setBackground(new Color(250, 250, 240));
+        scenePanel.setBackground(new Color(20, 22, 32));
         scenePanel.setPreferredSize(new Dimension(560, 320));
 
-        attackButton = createActionButton("Basic Attack", e -> battleController.handleAction(1));
-        defendButton = createActionButton("Defend", e -> battleController.handleAction(2));
-        skillButton = createActionButton("Use Skill", e -> battleController.handleAction(3));
-        itemButton = createActionButton("Use Item", e -> openInventoryFrame());
-        fleeButton = createActionButton("Flee", e -> battleController.handleAction(5));
-        shopButton = createActionButton("Open Shop", e -> openShopFrame());
-        saveButton = createActionButton("Save", e -> { gameController.saveGame(); JOptionPane.showMessageDialog(this, "Game saved.", "Save", JOptionPane.INFORMATION_MESSAGE); });
+        attackButton = createActionButton("\u2694 Attack", new Color(180, 50, 50), e -> battleController.handleAction(1));
+        defendButton = createActionButton("\uD83D\uDEE1 Defend", new Color(50, 100, 180), e -> battleController.handleAction(2));
+        skillButton = createActionButton("\u2728 Skill", new Color(140, 60, 180), e -> battleController.handleAction(3));
+        itemButton = createActionButton("\uD83C\uDF7A Item", new Color(180, 120, 40), e -> openInventoryFrame());
+        shopButton = createActionButton("\uD83D\uDCB0 Shop", new Color(50, 150, 80), e -> openShopFrame());
+        fleeButton = createActionButton("\uD83C\uDFC3 Flee", new Color(100, 100, 110), e -> battleController.handleAction(5));
+        saveButton = createActionButton("\uD83D\uDCBE Save", new Color(60, 130, 160), e -> { gameController.saveGame(); JOptionPane.showMessageDialog(this, "Game saved.", "Save", JOptionPane.INFORMATION_MESSAGE); });
 
-        JPanel actionPanel = new JPanel(new GridLayout(2, 2, 12, 12));
-        actionPanel.setBackground(Color.WHITE);
-        actionPanel.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
+        JPanel actionPanel = new JPanel(new GridLayout(2, 3, 10, 10));
+        actionPanel.setBackground(darkBg);
+        actionPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         actionPanel.add(attackButton);
+        actionPanel.add(defendButton);
         actionPanel.add(skillButton);
         actionPanel.add(itemButton);
+        actionPanel.add(shopButton);
         actionPanel.add(fleeButton);
 
-        JPanel centerPanel = new JPanel(new BorderLayout(12, 12));
-        centerPanel.setBackground(Color.WHITE);
+        JPanel centerPanel = new JPanel(new BorderLayout(10, 10));
+        centerPanel.setBackground(darkBg);
         centerPanel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
         centerPanel.add(scenePanel, BorderLayout.CENTER);
         centerPanel.add(actionPanel, BorderLayout.SOUTH);
         add(centerPanel, BorderLayout.CENTER);
 
         JPanel footerPanel = new JPanel(new GridLayout(1, 2, 10, 10));
-        footerPanel.setBackground(Color.WHITE);
+        footerPanel.setBackground(darkBg);
         footerPanel.setBorder(BorderFactory.createEmptyBorder(0, 8, 8, 8));
         footerPanel.add(createSmallUtilityButton("Inventory", e -> openInventoryFrame()));
         footerPanel.add(createSmallUtilityButton("Save", e -> { gameController.saveGame(); JOptionPane.showMessageDialog(this, "Game saved.", "Save", JOptionPane.INFORMATION_MESSAGE); }));
@@ -234,17 +262,31 @@ public class RpgGameUI extends JFrame implements
 
     private JLabel createHeaderLabel(String text) {
         JLabel label = new JLabel(text, SwingConstants.CENTER);
-        label.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
-        label.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
+        label.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
+        label.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(60, 65, 90), 1),
+            BorderFactory.createEmptyBorder(4, 6, 4, 6)));
         label.setOpaque(true);
-        label.setBackground(Color.WHITE);
-        label.setForeground(Color.DARK_GRAY);
+        label.setBackground(new Color(30, 32, 45));
+        label.setForeground(new Color(220, 225, 240));
         return label;
     }
 
     private JButton createActionButton(String text, ActionListener listener) {
+        return createActionButton(text, new Color(60, 65, 80), listener);
+    }
+
+    private JButton createActionButton(String text, Color bgColor, ActionListener listener) {
         JButton button = new JButton(text);
-        button.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
+        button.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
+        button.setBackground(bgColor);
+        button.setForeground(new Color(240, 240, 250));
+        button.setFocusPainted(false);
+        button.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(bgColor.getRed() + 40 > 255 ? 255 : bgColor.getRed() + 40,
+                bgColor.getGreen() + 40 > 255 ? 255 : bgColor.getGreen() + 40,
+                bgColor.getBlue() + 40 > 255 ? 255 : bgColor.getBlue() + 40, 150), 2),
+            BorderFactory.createEmptyBorder(8, 12, 8, 12)));
         button.addActionListener(listener);
         button.setEnabled(false);
         return button;
@@ -253,9 +295,12 @@ public class RpgGameUI extends JFrame implements
     private JButton createSmallUtilityButton(String text, ActionListener listener) {
         JButton button = new JButton(text);
         button.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
-        button.setBackground(new Color(245, 245, 245));
-        button.setForeground(Color.DARK_GRAY);
+        button.setBackground(new Color(35, 38, 52));
+        button.setForeground(new Color(200, 205, 220));
         button.setFocusPainted(false);
+        button.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(60, 65, 90), 1),
+            BorderFactory.createEmptyBorder(6, 10, 6, 10)));
         button.addActionListener(listener);
         return button;
     }
@@ -295,7 +340,6 @@ public class RpgGameUI extends JFrame implements
     private void startWave() {
         gameController.startWave();
         animateBattleScene();
-        shopButton.setEnabled(false);
 
         battleController = new BattleController(state, inventoryService, this);
         enableActionButtons(true);
@@ -381,6 +425,7 @@ public class RpgGameUI extends JFrame implements
         skillButton.setEnabled(enabled);
         itemButton.setEnabled(enabled);
         fleeButton.setEnabled(enabled);
+        shopButton.setEnabled(enabled);
     }
 
     // ========================= SUB-FRAMES =========================

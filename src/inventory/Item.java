@@ -23,6 +23,6 @@ public abstract class Item {
         return effectValue;
     }
 
-    public abstract void use(Character target);
+    public abstract boolean use(Character target);
 }
 

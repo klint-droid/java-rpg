@@ -158,8 +158,15 @@ public class BattleController {
         }
 
         try {
-            inventoryService.useItemByName(selectedName, target);
-            listener.onLog("Used " + selectedName + " on " + target.getName() + ".");
+            boolean success = inventoryService.useItemByName(selectedName, target);
+            if (success) {
+                listener.onLog("Used " + selectedName + " on " + target.getName() + ".");
+            } else {
+                listener.onLog(selectedName + " is not applicable on " + target.getName() + ".");
+                listener.onStatusUpdate("Item not applicable on this target.");
+                listener.onPanelsRefresh();
+                return;
+            }
         } catch (EmptyInventoryException e) {
             listener.onStatusUpdate(e.getMessage());
             return;

@@ -78,6 +78,15 @@ public class AssetManager {
             createPlaceholder("char_warrior.png", 96, 96, new Color(200, 120, 120), "W");
             createPlaceholder("char_mage.png", 96, 96, new Color(120, 160, 220), "M");
             createPlaceholder("char_archer.png", 96, 96, new Color(160, 200, 140), "A");
+
+            // Enemy portraits
+            createPlaceholder("enemy_goblin.png", 96, 96, new Color(100, 160, 80), "GO");
+            createPlaceholder("enemy_goblin_archer.png", 96, 96, new Color(120, 140, 70), "GA");
+            createPlaceholder("enemy_dark_mage.png", 96, 96, new Color(100, 60, 140), "DM");
+            createPlaceholder("enemy_dragon.png", 96, 96, new Color(180, 60, 60), "DR");
+            createPlaceholder("enemy_orc.png", 96, 96, new Color(80, 120, 60), "OR");
+            createPlaceholder("enemy_shadow_beast.png", 96, 96, new Color(60, 60, 80), "SB");
+
             createPlaceholder("item_health.png", 32, 32, Color.RED, "H");
             createPlaceholder("item_mana.png", 32, 32, Color.BLUE, "MP");
             createPlaceholder("item_mega.png", 32, 32, Color.MAGENTA, "MG");
@@ -100,15 +109,25 @@ public class AssetManager {
                 String name = f.getName().toLowerCase();
                 String target = null;
 
+                // Character portraits
                 if (name.contains("warrior")) target = "char_warrior.png";
-                else if (name.contains("archer")) target = "char_archer.png";
+                else if (name.contains("archer") && !name.contains("goblin")) target = "char_archer.png";
                 else if (name.contains("mage") && !name.contains("dark")) target = "char_mage.png";
 
+                // Enemy portraits — order matters (specific before general)
+                else if (name.contains("goblin") && (name.contains("arher") || name.contains("archer")))
+                    target = "enemy_goblin_archer.png";
+                else if (name.contains("goblin")) target = "enemy_goblin.png";
+                else if (name.contains("dark") && name.contains("mage")) target = "enemy_dark_mage.png";
+                else if (name.contains("dragon")) target = "enemy_dragon.png";
+
+                // Potion items
                 else if (name.contains("health")) target = "item_health.png";
                 else if (name.contains("mana")) target = "item_mana.png";
                 else if (name.contains("mega")) target = "item_mega.png";
                 else if (name.contains("revive")) target = "item_revive.png";
 
+                // Battlefield background
                 else if (name.contains("battle") || name.contains("batle") || name.contains("dungeon"))
                     target = "battle.png";
 
