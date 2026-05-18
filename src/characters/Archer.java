@@ -5,7 +5,7 @@ import results.BattleResult;
 public class Archer extends Character {
 
     public Archer(String name){
-        super(name, 100, 40, 40, 5, CharacterType.ARCHER);
+        super(name, 300, 90, 40, 5, CharacterType.ARCHER);
     }
 
     @Override
@@ -29,6 +29,7 @@ public class Archer extends Character {
         }
 
         target.takeDamage(damage);
+        boolean targetSlain = !target.isAlive();
 
         return new BattleResult(
             getName()
@@ -41,7 +42,8 @@ public class Archer extends Character {
             + " damage.",
             damage,
             criticalHit,
-            false
+            false,
+            targetSlain
         );
     }
 
@@ -66,7 +68,6 @@ public class Archer extends Character {
                 calculateDamage(target, 0.7);
 
             target.takeDamage(damage);
-
             totalDamage += damage;
 
             System.out.println(
@@ -78,6 +79,7 @@ public class Archer extends Character {
             );
         }
 
+        boolean targetSlain = !target.isAlive();
         return new BattleResult(
             getName()
             + " used Arrow Rain on "
@@ -87,7 +89,8 @@ public class Archer extends Character {
             + " damage.",
             totalDamage,
             false,
-            false
+            false,
+            targetSlain
         );
     }
 

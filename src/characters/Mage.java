@@ -5,7 +5,7 @@ import results.BattleResult;
 public class Mage extends Character {
 
     public Mage(String name) {
-        super(name, 100, 60, 40, 5, CharacterType.MAGE);
+        super(name, 200, 100, 20, 5, CharacterType.MAGE);
     }
 
     @Override
@@ -29,6 +29,7 @@ public class Mage extends Character {
         }
 
         target.takeDamage(damage);
+        boolean targetSlain = !target.isAlive();
 
         return new BattleResult(
             getName()
@@ -41,7 +42,8 @@ public class Mage extends Character {
             + " damage.",
             damage,
             criticalHit,
-            false
+            false,
+            targetSlain
         );
     }
 
@@ -60,6 +62,7 @@ public class Mage extends Character {
             calculateDamage(target, 1.8);
 
         target.takeDamage(damage);
+        boolean targetSlain = !target.isAlive();
 
         return new BattleResult(
             getName()
@@ -70,7 +73,8 @@ public class Mage extends Character {
             + " damage.",
             damage,
             false,
-            false
+            false,
+            targetSlain
         );
     }
 }

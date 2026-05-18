@@ -5,7 +5,7 @@ import results.BattleResult;
 public class Warrior extends Character {
 
     public Warrior(String name){
-        super(name, 150, 30, 30, 20, CharacterType.WARRIOR);
+        super(name, 450, 100, 50, 20, CharacterType.WARRIOR);
     }
 
     @Override
@@ -25,8 +25,9 @@ public class Warrior extends Character {
         }
         
         target.takeDamage(damage);
+        boolean targetSlain = !target.isAlive();
 
-         return new BattleResult(
+        return new BattleResult(
             getName()
             + (criticalHit
                 ? " landed a critical hit on "
@@ -37,7 +38,8 @@ public class Warrior extends Character {
             + " damage.",
             damage,
             criticalHit,
-            false
+            false,
+            targetSlain
         );
     }
 
@@ -56,6 +58,7 @@ public class Warrior extends Character {
         double damage = calculateDamage(target, 2.0);
         
         target.takeDamage(damage);
+        boolean targetSlain = !target.isAlive();
 
         return new BattleResult(
             getName()
@@ -66,7 +69,8 @@ public class Warrior extends Character {
             + " damage.",
             damage,
             false,
-            false
+            false,
+            targetSlain
         );
     }
 }

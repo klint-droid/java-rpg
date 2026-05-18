@@ -47,6 +47,7 @@ public class Enemy extends Character {
         }
 
         target.takeDamage(damage);
+        boolean targetSlain = !target.isAlive();
 
         return new BattleResult(
             getName()
@@ -59,7 +60,8 @@ public class Enemy extends Character {
             + " damage.",
             damage,
             criticalHit,
-            false
+            false,
+            targetSlain
         );
     }
 
@@ -77,6 +79,7 @@ public class Enemy extends Character {
             calculateDamage(target, 2.0);
 
         target.takeDamage(damage);
+        boolean targetSlain = !target.isAlive();
 
         return new BattleResult(
             getName()
@@ -87,7 +90,8 @@ public class Enemy extends Character {
             + " damage.",
             damage,
             false,
-            false
+            false,
+            targetSlain
         );
     }
 

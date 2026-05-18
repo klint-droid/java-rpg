@@ -1,19 +1,5 @@
 package ui;
 
-import battle.BattleController;
-import characters.Character;
-import constants.GameConstants;
-import enemies.Enemy;
-import game.GameController;
-import game.GameState;
-import inventory.HealthPotion;
-import inventory.InventoryService;
-import inventory.ManaPotion;
-import inventory.MegaPotion;
-import inventory.RevivePotion;
-import inventory.StackedItem;
-import shop.ShopService;
-
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
@@ -23,7 +9,10 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
+
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -40,11 +29,23 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
+import battle.BattleController;
+import characters.Character;
+import constants.GameConstants;
+import enemies.Enemy;
+import game.GameController;
+import game.GameState;
+import inventory.HealthPotion;
+import inventory.InventoryService;
+import inventory.ManaPotion;
+import inventory.MegaPotion;
+import inventory.RevivePotion;
+import inventory.StackedItem;
+import shop.ShopService;
+
 /**
  * Main game window — handles only Swing layout, rendering, and user input.
  * All game logic is delegated to GameController, BattleController, and services.
- *
- * Refactored from 1,242 lines to ~400 lines following SOLID principles.
  */
 public class RpgGameUI extends JFrame implements
         GameController.GameEventListener,
@@ -62,6 +63,11 @@ public class RpgGameUI extends JFrame implements
 
     // --- Swing Components ---
     private JLabel waveLabel, goldLabel, turnLabel, scoreLabel, statusLabel;
+    private JPanel toastPanel;
+    private JLabel toastLabel;
+    private Timer toastTimer;
+    private Queue<String> toastQueue;
+    private boolean toastShowing;
     private JPanel partyPanel, enemyPanel, inventoryPanel, scenePanel;
     private JTextArea logArea, artArea;
     private JLabel imageLabel;
@@ -70,6 +76,7 @@ public class RpgGameUI extends JFrame implements
     private Timer animationTimer;
     private String[] battleFrames;
     private int animationIndex;
+    private boolean hasUnsavedChanges = false;
 
     public RpgGameUI() {
         setTitle("RPG Battle GUI");
@@ -82,6 +89,8 @@ public class RpgGameUI extends JFrame implements
         assetManager = new AssetManager();
         cardRenderer = new CardRenderer(assetManager);
         state = new GameState();
+        toastQueue = new LinkedList<>();
+        toastShowing = false;
 
         assetManager.ensureAssetsExist();
         initializeComponents();
@@ -104,6 +113,18 @@ public class RpgGameUI extends JFrame implements
         scoreLabel = createHeaderLabel("Enemies Defeated: 0");
         statusLabel = createHeaderLabel("Choose a character to begin.");
 
+        toastPanel = new JPanel(new BorderLayout());
+        toastPanel.setBackground(new Color(24, 28, 42));
+        toastPanel.setBorder(BorderFactory.createEmptyBorder(6, 12, 6, 12));
+        toastLabel = new JLabel(" ", SwingConstants.CENTER);
+        toastLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
+        toastLabel.setForeground(new Color(245, 245, 245));
+        toastLabel.setOpaque(true);
+        toastLabel.setBackground(new Color(40, 55, 90));
+        toastLabel.setBorder(BorderFactory.createLineBorder(new Color(80, 130, 220), 1));
+        toastPanel.add(toastLabel, BorderLayout.CENTER);
+        toastPanel.setVisible(false);
+
         JPanel topBar = new JPanel(new GridLayout(1, 5, 6, 6));
         topBar.setBackground(darkBg);
         topBar.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
@@ -112,7 +133,12 @@ public class RpgGameUI extends JFrame implements
         topBar.add(turnLabel);
         topBar.add(scoreLabel);
         topBar.add(statusLabel);
-        add(topBar, BorderLayout.NORTH);
+
+        JPanel topContainer = new JPanel(new BorderLayout());
+        topContainer.setBackground(darkBg);
+        topContainer.add(toastPanel, BorderLayout.NORTH);
+        topContainer.add(topBar, BorderLayout.CENTER);
+        add(topContainer, BorderLayout.NORTH);
 
         partyPanel = new JPanel();
         partyPanel.setBorder(BorderFactory.createTitledBorder(
@@ -151,10 +177,10 @@ public class RpgGameUI extends JFrame implements
             "\uD83D\uDC80 ENEMIES", javax.swing.border.TitledBorder.LEFT,
             javax.swing.border.TitledBorder.TOP,
             new Font(Font.SANS_SERIF, Font.BOLD, 13), new Color(255, 100, 100)));
-        enemyPanel.setLayout(new BoxLayout(enemyPanel, BoxLayout.Y_AXIS));
+        enemyPanel.setLayout(new BoxLayout(enemyPanel, BoxLayout.X_AXIS));
         enemyPanel.setBackground(panelBg);
         enemyPanel.setOpaque(true);
-        enemyPanel.setPreferredSize(new Dimension(340, 280));
+        enemyPanel.setPreferredSize(new Dimension(340, 320));
 
         logArea = new JTextArea();
         logArea.setEditable(false);
@@ -204,7 +230,11 @@ public class RpgGameUI extends JFrame implements
         itemButton = createActionButton("\uD83C\uDF7A Item", new Color(180, 120, 40), e -> openInventoryFrame());
         shopButton = createActionButton("\uD83D\uDCB0 Shop", new Color(50, 150, 80), e -> openShopFrame());
         fleeButton = createActionButton("\uD83C\uDFC3 Flee", new Color(100, 100, 110), e -> battleController.handleAction(5));
-        saveButton = createActionButton("\uD83D\uDCBE Save", new Color(60, 130, 160), e -> { gameController.saveGame(); JOptionPane.showMessageDialog(this, "Game saved.", "Save", JOptionPane.INFORMATION_MESSAGE); });
+        saveButton = createActionButton("\uD83D\uDCBE Save", new Color(60, 130, 160), e -> {
+            gameController.saveGame();
+            hasUnsavedChanges = false;
+            JOptionPane.showMessageDialog(this, "Game saved.", "Save", JOptionPane.INFORMATION_MESSAGE);
+        });
 
         JPanel actionPanel = new JPanel(new GridLayout(2, 3, 10, 10));
         actionPanel.setBackground(darkBg);
@@ -223,11 +253,12 @@ public class RpgGameUI extends JFrame implements
         centerPanel.add(actionPanel, BorderLayout.SOUTH);
         add(centerPanel, BorderLayout.CENTER);
 
-        JPanel footerPanel = new JPanel(new GridLayout(1, 2, 10, 10));
+        JPanel footerPanel = new JPanel(new GridLayout(1, 3, 10, 10));
         footerPanel.setBackground(darkBg);
         footerPanel.setBorder(BorderFactory.createEmptyBorder(0, 8, 8, 8));
         footerPanel.add(createSmallUtilityButton("Inventory", e -> openInventoryFrame()));
         footerPanel.add(createSmallUtilityButton("Save", e -> { gameController.saveGame(); JOptionPane.showMessageDialog(this, "Game saved.", "Save", JOptionPane.INFORMATION_MESSAGE); }));
+        footerPanel.add(createSmallUtilityButton("Back to Main Menu", e -> handleBackToMainMenu()));
         add(footerPanel, BorderLayout.SOUTH);
 
         battleFrames = new String[] {
@@ -308,30 +339,145 @@ public class RpgGameUI extends JFrame implements
     // ========================= GAME FLOW =========================
 
     private void showIntroMenu() {
-        String[] options = {"New Game", "Load Game", "Exit"};
-        int choice = JOptionPane.showOptionDialog(this,
-            "Welcome to the RPG Battle GUI!",
-            "RPG Game",
-            JOptionPane.DEFAULT_OPTION,
-            JOptionPane.PLAIN_MESSAGE,
-            null, options, options[0]);
+        JDialog introDialog = new JDialog(this, "RPG by Klint, Kent & Rex", true);
+        introDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        introDialog.setSize(700, 550);
+        introDialog.setLocationRelativeTo(this);
+        introDialog.setResizable(false);
+
+        Color darkBg = new Color(18, 18, 28);
+        Color accentColor = new Color(80, 130, 220);
+
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+        mainPanel.setBackground(darkBg);
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(40, 40, 40, 40));
+
+        // Title
+        JLabel titleLabel = new JLabel("⚔️ EPIC RPG BATTLE ⚔️");
+        titleLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 32));
+        titleLabel.setForeground(new Color(255, 215, 80));
+        titleLabel.setAlignmentX(0.5f);
+
+        // Subtitle
+        JLabel subtitleLabel = new JLabel("Turn-based Strategic Combat");
+        subtitleLabel.setFont(new Font(Font.SANS_SERIF, Font.ITALIC, 14));
+        subtitleLabel.setForeground(new Color(200, 200, 220));
+        subtitleLabel.setAlignmentX(0.5f);
+
+        // Description
+        JLabel descLabel = new JLabel("<html><center>Lead your party to victory against fearsome enemies.<br>Manage resources, choose actions wisely.</center></html>");
+        descLabel.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
+        descLabel.setForeground(new Color(180, 180, 200));
+        descLabel.setAlignmentX(1.0f);
+
+        mainPanel.add(titleLabel);
+        mainPanel.add(Box.createVerticalStrut(8));
+        mainPanel.add(subtitleLabel);
+        mainPanel.add(Box.createVerticalStrut(20));
+        mainPanel.add(descLabel);
+        mainPanel.add(Box.createVerticalStrut(40));
+
+        // Button Panel
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.Y_AXIS));
+        buttonPanel.setBackground(darkBg);
+        buttonPanel.setAlignmentX(0.5f);
+
+        int[] result = {-1};
+
+        JButton newGameBtn = new JButton("🎮 NEW GAME");
+        newGameBtn.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
+        newGameBtn.setBackground(new Color(50, 150, 80));
+        newGameBtn.setForeground(Color.WHITE);
+        newGameBtn.setFocusPainted(false);
+        newGameBtn.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(100, 200, 130), 2),
+            BorderFactory.createEmptyBorder(12, 40, 12, 40)));
+        newGameBtn.setMaximumSize(new Dimension(300, 50));
+        newGameBtn.setAlignmentX(0.5f);
+        newGameBtn.addActionListener(e -> {
+            result[0] = 0;
+            introDialog.dispose();
+        });
+
+        JButton loadGameBtn = new JButton("📂 LOAD GAME");
+        loadGameBtn.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
+        loadGameBtn.setBackground(new Color(60, 100, 160));
+        loadGameBtn.setForeground(Color.WHITE);
+        loadGameBtn.setFocusPainted(false);
+        loadGameBtn.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(100, 150, 220), 2),
+            BorderFactory.createEmptyBorder(12, 40, 12, 40)));
+        loadGameBtn.setMaximumSize(new Dimension(300, 50));
+        loadGameBtn.setAlignmentX(0.5f);
+        loadGameBtn.addActionListener(e -> {
+            result[0] = 1;
+            introDialog.dispose();
+        });
+
+        JButton exitBtn = new JButton("❌ EXIT GAME");
+        exitBtn.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
+        exitBtn.setBackground(new Color(150, 50, 50));
+        exitBtn.setForeground(Color.WHITE);
+        exitBtn.setFocusPainted(false);
+        exitBtn.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(200, 100, 100), 2),
+            BorderFactory.createEmptyBorder(12, 40, 12, 40)));
+        exitBtn.setMaximumSize(new Dimension(300, 50));
+        exitBtn.setAlignmentX(0.5f);
+        exitBtn.addActionListener(e -> {
+            result[0] = 2;
+            introDialog.dispose();
+        });
+
+        buttonPanel.add(newGameBtn);
+        buttonPanel.add(Box.createVerticalStrut(12));
+        buttonPanel.add(loadGameBtn);
+        buttonPanel.add(Box.createVerticalStrut(12));
+        buttonPanel.add(exitBtn);
+
+        mainPanel.add(buttonPanel);
+        introDialog.add(mainPanel);
+        introDialog.setVisible(true);
+
+        int choice = result[0];
 
         gameController = new GameController(state, this);
         inventoryService = new InventoryService(state.getInventory());
 
         switch (choice) {
             case 0 -> {
-                gameController.startNewGame();
-                inventoryService = new InventoryService(state.getInventory());
-                startWave();
+                java.util.List<Integer> team = showTeamBuilderDialog();
+                if (team != null && !team.isEmpty()) {
+                    gameController.startNewGame(team);
+                    inventoryService = new InventoryService(state.getInventory());
+                    startWave();
+                } else {
+                    dispose();
+                }
             }
             case 1 -> {
                 if (!gameController.loadSavedGame()) {
                     JOptionPane.showMessageDialog(this, "No saved game found or file is invalid.", "Load Error", JOptionPane.ERROR_MESSAGE);
-                    gameController.startNewGame();
+                    java.util.List<Integer> team = showTeamBuilderDialog();
+                    if (team != null && !team.isEmpty()) {
+                        gameController.startNewGame(team);
+                        inventoryService = new InventoryService(state.getInventory());
+                        startWave();
+                    } else {
+                        dispose();
+                    }
+                } else {
+                    // Loaded a saved game: restore UI without regenerating enemies
+                    inventoryService = new InventoryService(state.getInventory());
+                    animateBattleScene();
+                    battleController = new BattleController(state, inventoryService, this);
+                    enableActionButtons(true);
+                    updatePanels();
+                    onLog("Game loaded successfully.");
+                    battleController.nextPlayerTurn();
                 }
-                inventoryService = new InventoryService(state.getInventory());
-                startWave();
             }
             default -> dispose();
         }
@@ -378,6 +524,8 @@ public class RpgGameUI extends JFrame implements
             turnLabel.setText("Turn: " + state.getTurnCount());
             scoreLabel.setText("Enemies Defeated: " + state.getEnemiesDefeated());
 
+            // Build party UI cards from the game state. This is dynamic:
+            // every player in the backend list becomes one card in the panel.
             partyPanel.removeAll();
             partyPanel.setLayout(new GridLayout(1, Math.max(1, state.getPlayers().size()), 12, 12));
             partyPanel.setBackground(new Color(18, 18, 28));
@@ -385,9 +533,10 @@ public class RpgGameUI extends JFrame implements
                 partyPanel.add(cardRenderer.createPlayerCard(player));
             }
 
+            // Build enemy UI cards from the backend enemy list on every refresh.
             enemyPanel.removeAll();
             ArrayList<Enemy> enemies = state.getEnemies();
-            enemyPanel.setLayout(new GridLayout(Math.max(1, enemies.size()), 1, 12, 12));
+            enemyPanel.setLayout(new GridLayout(1, Math.max(1, enemies.size()), 12, 12));
             enemyPanel.setBackground(new Color(18, 18, 28));
             if (!enemies.isEmpty()) {
                 for (Enemy enemy : enemies) {
@@ -446,6 +595,10 @@ public class RpgGameUI extends JFrame implements
     public void onLog(String message) {
         logArea.append(message + "\n");
         logArea.setCaretPosition(logArea.getDocument().getLength());
+        // Show toast notification for every action
+        if (!message.trim().isEmpty() && !message.startsWith("---")) {
+            onToast(message.trim());
+        }
     }
 
     @Override
@@ -454,13 +607,38 @@ public class RpgGameUI extends JFrame implements
     }
 
     @Override
-    public void onPanelsRefresh() {
-        updatePanels();
+    public void onToast(String message) {
+        toastQueue.add(message);
+        if (!toastShowing) {
+            showNextToast();
+        }
+    }
+
+    private void showNextToast() {
+        if (toastQueue.isEmpty()) {
+            toastShowing = false;
+            return;
+        }
+
+        toastShowing = true;
+        String message = toastQueue.poll();
+        toastLabel.setText(message);
+        toastPanel.setVisible(true);
+
+        if (toastTimer != null && toastTimer.isRunning()) {
+            toastTimer.stop();
+        }
+        toastTimer = new Timer(1800, e -> {
+            toastPanel.setVisible(false);
+            showNextToast();
+        });
+        toastTimer.setRepeats(false);
+        toastTimer.start();
     }
 
     @Override
-    public int onCharacterSelection(int slotNumber) {
-        return showCharacterSelectionDialog(slotNumber);
+    public void onPanelsRefresh() {
+        updatePanels();
     }
 
     @Override
@@ -472,12 +650,28 @@ public class RpgGameUI extends JFrame implements
     public void onBattleEnd(boolean victory) {
         enableActionButtons(false);
         if (victory) {
+            double prevGold = state.getGold();
             gameController.handleVictory();
+            double reward = state.getGold() - prevGold;
             onLog("\nVictory! Wave " + state.getCurrentWave() + " cleared.");
             onStatusUpdate("Wave " + state.getCurrentWave() + " cleared. Visit the shop before the next wave.");
+
+            if (state.getCurrentWave() >= 4) {
+                JOptionPane.showMessageDialog(this,
+                    "CONGRATULATIONS!\nYou have completed all 4 waves and won the game!\n" +
+                    "Enemies defeated: " + state.getEnemiesDefeated() + "\n" +
+                    "Turns taken: " + state.getTurnCount() + "\n" +
+                    "Final Gold: " + (int)state.getGold(),
+                    "Final Victory!", JOptionPane.INFORMATION_MESSAGE);
+                hasUnsavedChanges = false;
+                showIntroMenu();
+                return;
+            }
+
             JOptionPane.showMessageDialog(this,
                 "VICTORY!\nEnemies defeated: " + state.getEnemiesDefeated()
-                    + "\nTurns taken: " + state.getTurnCount(),
+                    + "\nTurns taken: " + state.getTurnCount()
+                    + "\nGold: " + (int)state.getGold() + " (+" + (int)reward + " this wave)",
                 "Victory", JOptionPane.INFORMATION_MESSAGE);
             updatePanels();
             shopButton.setEnabled(true);
@@ -487,7 +681,7 @@ public class RpgGameUI extends JFrame implements
             while (!proceedToNext) {
                 String[] postOptions = {"Open Shop", "Start Next Wave", "Exit Game"};
                 int choice = JOptionPane.showOptionDialog(this,
-                    "What would you like to do next?\nGold: " + state.getGold(),
+                    "What would you like to do next?\nGold: " + (int)state.getGold(),
                     "Post-Wave Options",
                     JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE,
                     null, postOptions, postOptions[0]);
@@ -552,6 +746,24 @@ public class RpgGameUI extends JFrame implements
         return choosePlayerTargetDialog(players);
     }
 
+    @Override
+    public boolean onConfirmAction(String message) {
+        int result = JOptionPane.showConfirmDialog(this, message, "Confirm Action", JOptionPane.YES_NO_OPTION);
+        return result == JOptionPane.YES_OPTION;
+    }
+
+    @Override
+    public void onShowMessage(String message) {
+        JOptionPane.showMessageDialog(this, message, "Battle Details", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    @Override
+    public void onDelay(int milliseconds, Runnable afterDelay) {
+        Timer timer = new Timer(milliseconds, e -> afterDelay.run());
+        timer.setRepeats(false);
+        timer.start();
+    }
+
     // ========================= SHARED DIALOGS =========================
 
     public Character choosePlayerTargetDialog(ArrayList<Character> players) {
@@ -573,53 +785,153 @@ public class RpgGameUI extends JFrame implements
         return choosePlayerTargetDialog(state.getPlayers());
     }
 
-    private int showCharacterSelectionDialog(int slotNumber) {
+    private java.util.List<Integer> showTeamBuilderDialog() {
         String[] choices = {"Warrior", "Mage", "Archer"};
-        String[] imgs = {"char_warrior.png", "char_mage.png", "char_archer.png"};
-        String title = "Choose your character " + slotNumber;
-
-        final int[] selectedIndex = {-1};
-
-        JDialog dialog = new JDialog(this, title, true);
+        String[] imgs = {"players/warrior.png", "players/mage.png", "players/archer.png"};
+        
+        java.util.List<Integer> selectedClasses = new ArrayList<>();
+        
+        JDialog dialog = new JDialog(this, "Team Builder", true);
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         dialog.setLayout(new BorderLayout(12, 12));
+        dialog.getContentPane().setBackground(new Color(18, 18, 28));
 
-        JLabel prompt = new JLabel("Select your hero by clicking the image", SwingConstants.CENTER);
-        prompt.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
+        JLabel prompt = new JLabel("Click to add/remove members (Max 2)", SwingConstants.CENTER);
+        prompt.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 18));
         prompt.setForeground(Color.WHITE);
-        prompt.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
+        prompt.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
         dialog.add(prompt, BorderLayout.NORTH);
 
-        JPanel cardPanel = new JPanel(new GridLayout(1, choices.length, 16, 16));
-        cardPanel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        cardPanel.setBackground(new Color(20, 20, 28));
+        JPanel classPanel = new JPanel(new GridLayout(1, choices.length, 16, 16));
+        classPanel.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(new Color(80, 130, 220, 100), 2),
+            "AVAILABLE CLASSES", javax.swing.border.TitledBorder.LEFT,
+            javax.swing.border.TitledBorder.TOP,
+            new Font(Font.SANS_SERIF, Font.BOLD, 13), new Color(255, 215, 80)));
+        classPanel.setBackground(new Color(24, 26, 36));
+
+        JPanel partyPanel = new JPanel(new GridLayout(1, 2, 16, 16));
+        partyPanel.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(new Color(80, 220, 130, 100), 2),
+            "CURRENT PARTY", javax.swing.border.TitledBorder.LEFT,
+            javax.swing.border.TitledBorder.TOP,
+            new Font(Font.SANS_SERIF, Font.BOLD, 13), new Color(255, 215, 80)));
+        partyPanel.setBackground(new Color(24, 26, 36));
+        partyPanel.setPreferredSize(new Dimension(620, 160));
+
+        JButton startBtn = new JButton("START ADVENTURE");
+        startBtn.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
+        startBtn.setBackground(new Color(50, 150, 80));
+        startBtn.setForeground(Color.WHITE);
+        startBtn.setFocusPainted(false);
+        startBtn.setEnabled(false);
+        startBtn.addActionListener(e -> dialog.dispose());
+        
+        final Runnable[] updateUIRef = new Runnable[1];
+        updateUIRef[0] = () -> {
+            partyPanel.removeAll();
+            for (int i = 0; i < selectedClasses.size(); i++) {
+                int indexInList = i;
+                int classChoice = selectedClasses.get(i);
+                ImageIcon icon = assetManager.loadIcon(imgs[classChoice], 100, 100);
+                JButton pBtn = new JButton(choices[classChoice], icon);
+                pBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+                pBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+                pBtn.setBackground(new Color(80, 50, 60));
+                pBtn.setForeground(Color.WHITE);
+                pBtn.setToolTipText("Click to remove");
+                pBtn.addActionListener(e -> {
+                    selectedClasses.remove(indexInList);
+                    updateUIRef[0].run();
+                });
+                partyPanel.add(pBtn);
+            }
+            for (int i = selectedClasses.size(); i < 2; i++) {
+                JLabel emptySlot = new JLabel("Empty Slot", SwingConstants.CENTER);
+                emptySlot.setForeground(Color.GRAY);
+                emptySlot.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 2, true));
+                partyPanel.add(emptySlot);
+            }
+            startBtn.setEnabled(selectedClasses.size() > 0);
+            partyPanel.revalidate();
+            partyPanel.repaint();
+        };
 
         for (int i = 0; i < choices.length; i++) {
-            int index = i;
-            ImageIcon icon = assetManager.loadIcon(imgs[i], 160, 160);
+            int classChoice = i;
+            ImageIcon icon = assetManager.loadIcon(imgs[i], 120, 120);
             JButton btn = new JButton(choices[i], icon);
             btn.setVerticalTextPosition(SwingConstants.BOTTOM);
             btn.setHorizontalTextPosition(SwingConstants.CENTER);
             btn.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 15));
             btn.setForeground(Color.WHITE);
             btn.setBackground(new Color(45, 45, 55));
-            btn.setFocusPainted(false);
-            btn.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(180, 180, 255), 2),
-                BorderFactory.createEmptyBorder(8, 8, 8, 8)));
+            btn.setToolTipText("Click to add to party");
             btn.addActionListener(e -> {
-                selectedIndex[0] = index;
-                dialog.dispose();
+                if (selectedClasses.size() < 2) {
+                    selectedClasses.add(classChoice);
+                    updateUIRef[0].run();
+                }
             });
-            cardPanel.add(btn);
+            classPanel.add(btn);
         }
 
-        dialog.add(cardPanel, BorderLayout.CENTER);
-        dialog.setSize(620, 320);
+        updateUIRef[0].run();
+
+        JPanel centerPanel = new JPanel(new GridLayout(2, 1, 10, 10));
+        centerPanel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
+        centerPanel.setBackground(new Color(18, 18, 28));
+        centerPanel.add(classPanel);
+        centerPanel.add(partyPanel);
+
+        dialog.add(centerPanel, BorderLayout.CENTER);
+        
+        JPanel bottomPanel = new JPanel();
+        bottomPanel.setBackground(new Color(18, 18, 28));
+        bottomPanel.add(startBtn);
+        dialog.add(bottomPanel, BorderLayout.SOUTH);
+
+        dialog.setSize(620, 500);
         dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
 
-        return selectedIndex[0];
+        return selectedClasses;
+    }
+
+    private void handleBackToMainMenu() {
+        if (hasUnsavedChanges) {
+            String[] options = {"Resume", "Save Game", "Quit to Main Menu"};
+            int choice = JOptionPane.showOptionDialog(this,
+                "You have unsaved changes.\nWhat would you like to do?",
+                "Unsaved Changes",
+                JOptionPane.DEFAULT_OPTION,
+                JOptionPane.WARNING_MESSAGE,
+                null,
+                options,
+                options[0]);
+
+            switch (choice) {
+                case 0 -> {
+                    // Resume - do nothing
+                }
+                case 1 -> {
+                    gameController.saveGame();
+                    hasUnsavedChanges = false;
+                    JOptionPane.showMessageDialog(this, "Game saved.", "Save", JOptionPane.INFORMATION_MESSAGE);
+                    // After saving, return to main menu
+                    showIntroMenu();
+                }
+                case 2 -> {
+                    // Return to main menu without saving
+                    showIntroMenu();
+                }
+                default -> {
+                    // if dialog closed, resume
+                }
+            }
+        } else {
+            showIntroMenu();
+        }
     }
 
     private void openShopInline() {

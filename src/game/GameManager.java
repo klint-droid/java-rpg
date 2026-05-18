@@ -5,11 +5,11 @@ import java.util.Scanner;
 
 import battle.BattleSystem;
 import characters.Character;
+import constants.GameConstants;
 import enemies.Enemy;
+import factory.CharacterFactory;
 import inventory.Inventory;
 import shop.Shop;
-import constants.GameConstants;
-import factory.CharacterFactory;
 import ui.ConsoleUI;
 
 /**
@@ -125,7 +125,7 @@ public class GameManager {
                 state.setGold(shop.openShop());
 
                 SaveManager saveManager = new SaveManager();
-                saveManager.saveGame(state.getCurrentWave(), state.getGold(), state.getPlayers(), state.getInventory());
+                saveManager.saveGame(state.getCurrentWave(), state.getGold(), state.getPlayers(), state.getEnemies(), state.getInventory());
                 state.setCurrentWave(state.getCurrentWave() + 1);
             }       
         }
@@ -154,6 +154,7 @@ public class GameManager {
         state.setCurrentWave(saveData.getCurrentWave());
         state.setGold(saveData.getGold());
         state.setPlayers(saveData.getPlayers());
+        state.setEnemies(saveData.getEnemies());
         state.setInventory(saveData.getInventory());
     }
 

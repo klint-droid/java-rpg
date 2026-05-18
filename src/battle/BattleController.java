@@ -1,5 +1,8 @@
 package battle;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import actions.AttackAction;
 import actions.BattleAction;
 import actions.DefendAction;
@@ -13,12 +16,8 @@ import inventory.InventoryService;
 import inventory.StackedItem;
 import results.BattleResult;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Manages the turn-based battle flow for the GUI mode.
- * Extracted from RpgGameUI (lines 558-878) to follow the Single Responsibility Principle.
  *
  * Communicates with the UI through the BattleEventListener interface,
  * so this class has zero knowledge of Swing.
@@ -33,6 +32,7 @@ public class BattleController {
     public interface BattleEventListener {
         void onLog(String message);
         void onStatusUpdate(String message);
+        void onToast(String message);
         void onPanelsRefresh();
         void onActionButtonsEnabled(boolean enabled);
         void onBattleEnd(boolean victory);
@@ -40,6 +40,9 @@ public class BattleController {
         Character onChoosePlayerTarget(ArrayList<Character> players);
         String onChooseItem(List<StackedItem> stackedItems);
         Character onChooseItemTarget(ArrayList<Character> players);
+        boolean onConfirmAction(String message);
+        void onShowMessage(String message);
+        void onDelay(int milliseconds, Runnable afterDelay);
     }
 
     private final GameState state;
@@ -96,7 +99,7 @@ public class BattleController {
             case 1 -> performAttack(active);
             case 2 -> performDefend(active);
             case 3 -> performSkill(active);
-            case 4 -> performItem();
+            case 4 -> performItem(active);
             case 5 -> performFlee(active);
             default -> {}
         }
@@ -108,16 +111,26 @@ public class BattleController {
             return;
         }
 
+        if (!listener.onConfirmAction("Confirm to attack " + target.getName() + " with " + active.getName() + "?")) {
+            return;
+        }
+
         BattleAction action = new AttackAction(active, target);
         BattleResult result = action.execute();
-        listener.onLog(result.getMessage());
+        listener.onShowMessage(active.getName() + " attacked " + target.getName() + "!\nDetails: " + result.getMessage());
+        logBattleResult(result);
         afterPlayerAction(result);
     }
 
     private void performDefend(Character active) {
+        if (!listener.onConfirmAction("Confirm to have " + active.getName() + " defend?")) {
+            return;
+        }
+
         BattleAction action = new DefendAction(active);
         BattleResult result = action.execute();
-        listener.onLog(result.getMessage());
+        listener.onShowMessage(active.getName() + " is defending!\nDetails: " + result.getMessage());
+        logBattleResult(result);
         afterPlayerAction(result);
     }
 
@@ -127,20 +140,26 @@ public class BattleController {
             return;
         }
 
+        if (!listener.onConfirmAction("Confirm to use skill on " + target.getName() + " with " + active.getName() + "?")) {
+            return;
+        }
+
         BattleAction action = new SkillAction(active, target);
         BattleResult result = action.execute();
-        listener.onLog(result.getMessage());
 
         if (result.getMessage().contains("does not have enough mana")) {
+            logBattleResult(result);
             listener.onStatusUpdate(active.getName() + " needs more mana to use that skill.");
             listener.onPanelsRefresh();
             return;
         }
 
+        listener.onShowMessage(active.getName() + " used a skill on " + target.getName() + "!\nDetails: " + result.getMessage());
+        logBattleResult(result);
         afterPlayerAction(result);
     }
 
-    private void performItem() {
+    private void performItem(Character active) {
         if (state.getInventory().isEmpty()) {
             listener.onStatusUpdate("Inventory is empty.");
             return;
@@ -154,6 +173,10 @@ public class BattleController {
 
         Character target = listener.onChooseItemTarget(state.getPlayers());
         if (target == null) {
+            return;
+        }
+
+        if (!listener.onConfirmAction("Confirm to use " + selectedName + " on " + target.getName() + "?")) {
             return;
         }
 
@@ -175,10 +198,15 @@ public class BattleController {
             return;
         }
 
+        listener.onShowMessage(active.getName() + " used " + selectedName + " on " + target.getName() + "!");
         afterPlayerAction(new BattleResult("Item used.", 0, false, false));
     }
 
     private void performFlee(Character active) {
+        if (!listener.onConfirmAction("Confirm to flee with " + active.getName() + "?")) {
+            return;
+        }
+
         double fleeChance = Math.random() * 100;
         if (fleeChance < GameConstants.FLEE_SUCCESS_CHANCE) {
             listener.onLog(active.getName() + " successfully fled the battle!");
@@ -194,6 +222,9 @@ public class BattleController {
             if (player.isAlive()) {
                 player.takeDamage(GameConstants.FLEE_DAMAGE);
                 listener.onLog(player.getName() + " drops to " + player.getHp() + " HP.");
+                if (!player.isAlive()) {
+                    listener.onLog(player.getName() + " has been slain while fleeing!");
+                }
             }
         }
         listener.onPanelsRefresh();
@@ -213,6 +244,21 @@ public class BattleController {
         nextPlayerTurn();
     }
 
+    /**
+     * Log the result of an action and append a slain message when a target dies.
+     */
+    private void logBattleResult(BattleResult result) {
+        String message = result.getMessage();
+        if (result.getDamage() > 0 && !message.toLowerCase().contains("damage")) {
+            message += " (" + (int) result.getDamage() + " damage)";
+        }
+        if (result.isTargetSlain() && !message.toLowerCase().contains("slain")) {
+            message += " The target has been slain!";
+        }
+        listener.onLog(message);
+        listener.onToast(message);
+    }
+
     private void enemyTurn() {
         listener.onActionButtonsEnabled(false);
         if (!state.hasLivingEnemies()) {
@@ -221,32 +267,40 @@ public class BattleController {
         }
 
         listener.onLog("\n--- Enemy Turn ---");
-        for (Enemy enemy : state.getEnemies()) {
-            if (!enemy.isAlive()) {
-                continue;
-            }
-            BattleResult result = enemy.getAi().decideAction(enemy, state.getPlayers());
-            listener.onLog(result.getMessage());
-            listener.onPanelsRefresh();
-            if (!state.hasLivingPlayers()) {
-                break;
-            }
-        }
+        executeEnemyAction(0);
+    }
 
+    private void executeEnemyAction(int enemyIndex) {
         if (!state.hasLivingPlayers()) {
             listener.onBattleEnd(false);
             return;
         }
 
-        state.incrementTurn();
-        for (Character player : state.getPlayers()) {
-            if (player.isAlive()) {
-                player.regenerateMana(10);
+        if (enemyIndex >= state.getEnemies().size()) {
+            state.incrementTurn();
+            for (Character player : state.getPlayers()) {
+                if (player.isAlive()) {
+                    player.regenerateMana(10);
+                }
             }
+            state.setCurrentPlayerIndex(0);
+            listener.onPanelsRefresh();
+            nextPlayerTurn();
+            return;
         }
 
-        state.setCurrentPlayerIndex(0);
-        listener.onPanelsRefresh();
-        nextPlayerTurn();
+        Enemy enemy = state.getEnemies().get(enemyIndex);
+        if (!enemy.isAlive()) {
+            executeEnemyAction(enemyIndex + 1);
+            return;
+        }
+
+        listener.onDelay(3000, () -> {
+            BattleResult result = enemy.getAi().decideAction(enemy, state.getPlayers());
+            listener.onShowMessage("Enemy " + enemy.getName() + " is acting!\nDetails: " + result.getMessage());
+            logBattleResult(result);
+            listener.onPanelsRefresh();
+            executeEnemyAction(enemyIndex + 1);
+        });
     }
 }

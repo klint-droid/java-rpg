@@ -1,10 +1,5 @@
 package ui;
 
-import characters.Character;
-import enemies.Enemy;
-import inventory.Item;
-import inventory.StackedItem;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -14,6 +9,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.RenderingHints;
+
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
@@ -21,6 +17,11 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.SwingConstants;
 import javax.swing.plaf.basic.BasicProgressBarUI;
+
+import characters.Character;
+import enemies.Enemy;
+import inventory.Item;
+import inventory.StackedItem;
 
 /**
  * Factory methods for creating UI cards (player, enemy, inventory item).
@@ -60,7 +61,7 @@ public class CardRenderer {
     public JPanel createPlayerCard(Character player) {
         String cls = player.getClass().getSimpleName();
         String clsLower = cls.toLowerCase();
-        ImageIcon portrait = assetManager.loadIcon("char_" + clsLower + ".png", 130, 130);
+        ImageIcon portrait = assetManager.loadIcon("players/" + clsLower + ".png", 130, 130);
 
         boolean alive = player.isAlive();
 
@@ -138,13 +139,13 @@ public class CardRenderer {
      * Features a menacing red glow border. Shows DEFEATED overlay for dead enemies.
      */
     public JPanel createEnemyCard(Enemy enemy) {
-        // Try enemy-specific asset naming: enemy_<name>.png
-        String nameKey = enemy.getName().toLowerCase().replaceAll("\\s+", "_");
-        String typeKey = enemy.getEnemyType().toLowerCase().replaceAll("\\s+", "_");
+        // Try enemy-specific asset naming: enemies/<name>.png
+        String nameKey = enemy.getName().toLowerCase().replaceAll("\\s+", "");
+        String typeKey = enemy.getEnemyType().toLowerCase().replaceAll("\\s+", "");
 
-        ImageIcon portrait = assetManager.loadIcon("enemy_" + nameKey + ".png", 130, 130);
+        ImageIcon portrait = assetManager.loadIcon("enemies/" + nameKey + ".png", 130, 130);
         if (portrait == null || portrait.getIconWidth() <= 0) {
-            portrait = assetManager.loadIcon("enemy_" + typeKey + ".png", 130, 130);
+            portrait = assetManager.loadIcon("enemies/" + typeKey + ".png", 130, 130);
         }
 
         boolean alive = enemy.isAlive();

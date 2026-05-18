@@ -59,9 +59,19 @@ The game starts with a main menu where you can:
 
 ## Assets
 
+### UI & General
 - **UI Buttons**: `attack.png`, `defend.png`, `flee.png`, `skill.png`, `item.png`, `save.png`, `shop.png`
 - **Game Icon**: `icon.png`
 - **Battle Animation**: `battle.gif`
+
+### Backgrounds
+- `background.png` — default game background
+- `dungeon.png` — dungeon environment
+
+### Enemies
+- `goblin.png`, `goblinarcher.png`, `orc.png`, `darkmage.png`, `dragon.png`
+
+For complete asset documentation, see [README-ASSETS.md](README-ASSETS.md).
 
 ## License
 

@@ -4,6 +4,10 @@ import java.util.ArrayList;
 import java.util.Random;
 import java.util.Scanner;
 
+import actions.AttackAction;
+import actions.BattleAction;
+import actions.DefendAction;
+import actions.SkillAction;
 import characters.Character;
 import constants.GameConstants;
 import enemies.Enemy;
@@ -11,10 +15,6 @@ import inventory.EmptyInventoryException;
 import inventory.Inventory;
 import results.BattleResult;
 import ui.ConsoleUI;
-import actions.AttackAction;
-import actions.BattleAction;
-import actions.DefendAction;
-import actions.SkillAction;
 
 /**
  * Console-mode battle system. Uses shared hasLivingPlayers/hasLivingEnemies
@@ -92,37 +92,35 @@ public class BattleSystem {
                 ui.showMessage(player.getName() + " is taunted!");
 
                 Enemy target = enemies.get(0);
-
                 double missRoll = random.nextInt(100);
 
                 if(missRoll < 70){
-                    System.out.println(player.getName() + " misses the attack due to being taunted.");
+                    ui.showMessage(player.getName() + " misses the attack due to being taunted.");
                 } else {
                     BattleAction action = new AttackAction(player, target);
                     BattleResult result = action.execute();
-
-                    ui.showMessage(result.getMessage());
+                    ui.showMessage(formatResultMessage(result));
                 }
 
                 player.reduceTauntTurns();
                 continue;
             }
             
-            System.out.println("Choose an action:");
-            System.out.println("1. Attack");
-            System.out.println("2. Defend");
-            System.out.println("3. Use Skill");
-            System.out.println("4. Use Item");
-            System.out.println("5. Flee");
+            ui.showMessage("Choose an action:");
+            ui.showMessage("1. Attack");
+            ui.showMessage("2. Defend");
+            ui.showMessage("3. Use Skill");
+            ui.showMessage("4. Use Item");
+            ui.showMessage("5. Flee");
 
-            System.out.print("Enter your choice: ");
+            ui.showMessage("Enter your choice: ");
 
             int choice;
 
             try{
                 choice = Integer.parseInt(scanner.nextLine());
             } catch(NumberFormatException e){
-                System.out.println("Invalid input. Please enter a number.");
+                ui.showMessage("Invalid input. Please enter a number.");
                 continue;
             }
 
@@ -147,7 +145,7 @@ public class BattleSystem {
                     handleFleeAction();
                     break;
                 default:
-                    System.out.println("Invalid choice.");
+                    ui.showMessage("Invalid choice.");
                     break;
             }
         }
@@ -161,20 +159,15 @@ public class BattleSystem {
         }
 
         BattleAction attackAction = new AttackAction(player, target);
-
         BattleResult result = attackAction.execute();
-
-        ui.showMessage(result.getMessage());
-
+        displayActionResult(result);
         return hasLivingEnemies();
     }
 
     private void handleDefendAction(Character player){
         BattleAction defendAction = new DefendAction(player);
         BattleResult result = defendAction.execute();
-
-        ui.showMessage(result.getMessage());
-
+        displayActionResult(result);
     }
 
     private boolean handleSkillAction(Character player){
@@ -186,9 +179,7 @@ public class BattleSystem {
 
         BattleAction skillAction = new SkillAction(player, target);
         BattleResult result = skillAction.execute();
-
-        ui.showMessage(result.getMessage());
-
+        displayActionResult(result);
         return hasLivingEnemies();
     }
 
@@ -204,13 +195,13 @@ public class BattleSystem {
     private void handleItemAction(){
         try {
             inventory.displayItems();
-            System.out.println("Choose an item to use:");
+            ui.showMessage("Choose an item to use:");
             int itemChoice;
 
             try{
                 itemChoice = Integer.parseInt(scanner.nextLine());
             } catch (NumberFormatException e){
-                System.out.println("Invalid item input.");
+                ui.showMessage("Invalid item input.");
                 return;
             }
 
@@ -218,34 +209,33 @@ public class BattleSystem {
             inventory.useItem(itemChoice - 1, targetPlayer);
             displayPartyStatus();
         } catch (EmptyInventoryException e) {
-            System.out.println(e.getMessage());
+            ui.showMessage(e.getMessage());
         } catch(IndexOutOfBoundsException e){
-            System.out.println("Invalid item choice.");
-        }   
+            ui.showMessage("Invalid item choice.");
+        }
     }
     private void displayEnemies(){
-        System.out.println("\n=== Enemies ===");
+        ui.showMessage("\n=== Enemies ===");
         for(int i = 0; i < enemies.size(); i++){
             Enemy enemy = enemies.get(i);
 
             String status = enemy.isAlive() ? "Alive" : "Dead";
-
-            System.out.println((i + 1) + ". " + enemy.getName() + " | HP: " + enemy.getHp() + " | Status: " + status);
+            ui.showMessage((i + 1) + ". " + enemy.getName() + " | HP: " + enemy.getHp() + " | Status: " + status);
         }
 
-        System.out.println("===============\n");
+        ui.showMessage("===============\n");
     }
 
     private void displayPartyStatus(){
-        System.out.println("\n === Party Status === ");
+        ui.showMessage("\n === Party Status === ");
 
         for(Character player : players){
             String status = player.isAlive() ? "Alive" : "Dead";
 
-            System.out.println(player.getName() + " | HP: " + player.getHp() + " | Status: " + status);
+            ui.showMessage(player.getName() + " | HP: " + player.getHp() + " | Status: " + status);
         }
 
-        System.out.println("=====================");
+        ui.showMessage("=====================");
     }
     private Enemy chooseTarget(){
 
@@ -256,7 +246,7 @@ public class BattleSystem {
 
             displayEnemies();
 
-            System.out.print("Choose target: ");
+            ui.showMessage("Choose target:");
 
             try{
 
@@ -264,7 +254,7 @@ public class BattleSystem {
 
                 if(targetChoice < 1 || targetChoice > enemies.size()){
 
-                    System.out.println("Invalid target choice.");
+                    ui.showMessage("Invalid target choice.");
                     continue;
                 }
 
@@ -272,61 +262,59 @@ public class BattleSystem {
 
                 if(!target.isAlive()){
 
-                    System.out.println("That enemy is already defeated.");
+                    ui.showMessage("That enemy is already defeated.");
                     continue;
                 }
 
                 return target;
 
             } catch(NumberFormatException e){
-
-                System.out.println("Invalid input.");
+                ui.showMessage("Invalid input.");
             }
         }
     }
 
     private Character choosePlayerTarget(){
         while(true){
-            System.out.println("\n Choose Party Member: ");
+            ui.showMessage("\n Choose Party Member: ");
             for(int i = 0; i < players.size(); i++){
                 Character player = players.get(i);
 
-                System.out.println((i + 1) + ". " + player.getName() + " | HP: " + player.getHp());
+                ui.showMessage((i + 1) + ". " + player.getName() + " | HP: " + player.getHp());
             }
 
             try {
                 int choice = Integer.parseInt(scanner.nextLine());
 
                 if(choice < 1 || choice > players.size()){
-                    System.out.println("Invalid choice.");
+                    ui.showMessage("Invalid choice.");
                     continue;
                 }
 
                 return players.get(choice - 1);
             } catch(NumberFormatException e){
-                System.out.println("Invalid input.");
+                ui.showMessage("Invalid input.");
             }
         }
     }
 
     private void enemyTurn(){
-        System.out.println("\n\nEnemies turn: ");
+        ui.showMessage("\n\nEnemies turn: ");
         for(Enemy enemy : enemies){
             if(!enemy.isAlive()){
                 continue;
             }
             BattleResult result = enemy.getAi().decideAction(enemy, players);
-
-        ui.showMessage(result.getMessage());
+            displayActionResult(result);
         }
     }
 
     private void displayBattleResults(){
         if(hasLivingPlayers()){
-            System.out.println("\n\nYou won the battle!");
-            System.out.println("Turns taken: " + turnCount);
+            ui.showMessage("\n\nYou won the battle!");
+            ui.showMessage("Turns taken: " + turnCount);
         } else {
-            System.out.println("\n\nYou lost the battle.");
+            ui.showMessage("\n\nYou lost the battle.");
         }
     }
 
@@ -334,26 +322,50 @@ public class BattleSystem {
         double fleeChance = random.nextInt(100);
 
         if(fleeChance < GameConstants.FLEE_SUCCESS_CHANCE){
-            System.out.println("You fled the battle.");
+            ui.showMessage("You fled the battle.");
             return true;
         }
 
-        System.out.println("You failed to flee the battle.");
-        System.out.println("All party members take damage.");
+        ui.showMessage("You failed to flee the battle.");
+        ui.showMessage("All living party members take " + (int) GameConstants.FLEE_DAMAGE + " damage.");
 
         for(Character player : players){
             if(player.isAlive()){
                 player.takeDamage(GameConstants.FLEE_DAMAGE);
-                System.out.println(player.getName() + " takes 15 damage.");
+                ui.showMessage(player.getName() + " takes " + (int) GameConstants.FLEE_DAMAGE + " damage and has " + (int) player.getHp() + " HP left.");
+                if(!player.isAlive()){
+                    ui.showMessage(player.getName() + " has been slain while fleeing!");
+                }
             }
         }
 
         return false;
     }
 
+    private void displayActionResult(BattleResult result) {
+        ui.showMessage(formatResultMessage(result));
+        if (result.isTargetSlain()) {
+            ui.showMessage("The target has been slain!");
+        }
+    }
+
+    /**
+     * Format a battle result message for console output, including slain notifications.
+     */
+    private String formatResultMessage(BattleResult result) {
+        String message = result.getMessage();
+        if (result.getDamage() > 0 && !message.toLowerCase().contains("damage")) {
+            message += " (" + (int) result.getDamage() + " damage)";
+        }
+        if (result.isTargetSlain() && !message.toLowerCase().contains("slain")) {
+            message += " The target has been slain!";
+        }
+        return message;
+    }
+
     private void showTurnBanner(){
         ui.showDividerLine();
-        System.out.println("Turn " + turnCount);
+        ui.showMessage("Turn " + turnCount);
         ui.showDividerLine();
     }
 }

@@ -1,5 +1,12 @@
 package game;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Scanner;
+
 import characters.Character;
+import enemies.Enemy;
 import factory.CharacterFactory;
 import inventory.HealthPotion;
 import inventory.Inventory;
@@ -7,14 +14,9 @@ import inventory.Item;
 import inventory.ManaPotion;
 import inventory.MegaPotion;
 import inventory.RevivePotion;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Scanner;
 
 public class SaveManager {
-    public void saveGame(double currentWave, double gold, ArrayList<Character> players, Inventory inventory){
+    public void saveGame(double currentWave, double gold, ArrayList<Character> players, ArrayList<Enemy> enemies, Inventory inventory){
         try (FileWriter writer = new FileWriter("game-state.txt")) {
             writer.write(currentWave + "\n");
             writer.write(gold + "\n");
@@ -24,6 +26,17 @@ public class SaveManager {
                 writer.write(player.getCharacterType().name() + "\n");
                 writer.write(player.getName() + "\n");
                 writer.write(player.getHp() + "\n");
+            }
+
+            // Save enemies
+            writer.write(enemies.size() + "\n");
+            for (Enemy enemy : enemies) {
+                writer.write(enemy.getName() + "\n");
+                writer.write(enemy.getEnemyType() + "\n");
+                writer.write(enemy.getMaxHp() + "\n");
+                writer.write(enemy.getAtkPower() + "\n");
+                writer.write(enemy.getDefPower() + "\n");
+                writer.write(enemy.getHp() + "\n");
             }
 
             writer.write(inventory.getItems().size() + "\n");
@@ -40,9 +53,9 @@ public class SaveManager {
     public SaveData loadGame(){
         try (Scanner scanner = new Scanner(new File("game-state.txt"))) {
 
-            double currentWave = Integer.parseInt(scanner.nextLine());
-            double gold = Integer.parseInt(scanner.nextLine());
-            double playerCount = Integer.parseInt(scanner.nextLine());
+            double currentWave = Double.parseDouble(scanner.nextLine());
+            double gold = Double.parseDouble(scanner.nextLine());
+            double playerCount = Double.parseDouble(scanner.nextLine());
 
             ArrayList<Character> players = new ArrayList<>();
 
@@ -56,9 +69,27 @@ public class SaveManager {
                 player.setHp(hp);
                 players.add(player);   
             }
+
+            // Load enemies
+            ArrayList<Enemy> enemies = new ArrayList<>();
+            double enemyCount = Double.parseDouble(scanner.nextLine());
+
+            for(double i = 0; i < enemyCount; i++){
+                String enemyName = scanner.nextLine();
+                String enemyType = scanner.nextLine();
+                double maxHp = Double.parseDouble(scanner.nextLine());
+                double atkPower = Double.parseDouble(scanner.nextLine());
+                double defPower = Double.parseDouble(scanner.nextLine());
+                double currentHp = Double.parseDouble(scanner.nextLine());
+
+                Enemy enemy = new Enemy(enemyName, enemyType, maxHp, atkPower, defPower);
+                enemy.setHp(currentHp);
+                enemies.add(enemy);   
+            }
+
             Inventory inventory = new Inventory();
 
-            double itemCount = Integer.parseInt(scanner.nextLine());
+            double itemCount = Double.parseDouble(scanner.nextLine());
 
             for(double i = 0; i < itemCount; i++){
                 String itemType = scanner.nextLine();
@@ -78,9 +109,10 @@ public class SaveManager {
 
             scanner.close();
 
-            return new SaveData(currentWave, gold, players, inventory);
+            return new SaveData(currentWave, gold, players, enemies, inventory);
         } catch (Exception e) {
             System.out.println("Save file not found or corrupted.");
+            e.printStackTrace();
         }
 
         return null;
