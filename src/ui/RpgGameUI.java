@@ -18,6 +18,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -77,6 +78,9 @@ public class RpgGameUI extends JFrame implements
     private String[] battleFrames;
     private int animationIndex;
     private boolean hasUnsavedChanges = false;
+    
+    // The currently selected battle map background
+    private String selectedBattleMap = "battle.png";
 
     public RpgGameUI() {
         setTitle("RPG Battle GUI");
@@ -496,7 +500,7 @@ public class RpgGameUI extends JFrame implements
 
     private void animateBattleScene() {
         CardLayout cl = (CardLayout) scenePanel.getLayout();
-        ImageIcon battleIcon = assetManager.loadIcon("battle.png", 560, 320);
+        ImageIcon battleIcon = assetManager.loadIcon(selectedBattleMap, 560, 320);
         if (battleIcon != null) {
             imageLabel.setIcon(battleIcon);
             imageLabel.setText("");
@@ -825,7 +829,6 @@ public class RpgGameUI extends JFrame implements
         startBtn.setForeground(Color.WHITE);
         startBtn.setFocusPainted(false);
         startBtn.setEnabled(false);
-        startBtn.addActionListener(e -> dialog.dispose());
         
         final Runnable[] updateUIRef = new Runnable[1];
         updateUIRef[0] = () -> {
@@ -878,20 +881,102 @@ public class RpgGameUI extends JFrame implements
 
         updateUIRef[0].run();
 
-        JPanel centerPanel = new JPanel(new GridLayout(2, 1, 10, 10));
-        centerPanel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        centerPanel.setBackground(new Color(18, 18, 28));
-        centerPanel.add(classPanel);
-        centerPanel.add(partyPanel);
-
-        dialog.add(centerPanel, BorderLayout.CENTER);
+        // --- MAP SELECTION START ---
+        // Dynamically load available backgrounds from the assets/backgrounds directory
+        java.io.File bgDir = new java.io.File("assets/backgrounds");
+        String[] bgFiles = null;
+        if (bgDir.exists() && bgDir.isDirectory()) {
+            bgFiles = bgDir.list((dir, name) -> name.toLowerCase().endsWith(".png") || name.toLowerCase().endsWith(".jpg"));
+        }
+        if (bgFiles == null || bgFiles.length == 0) {
+            bgFiles = new String[]{"battle.png"};
+        }
         
-        JPanel bottomPanel = new JPanel();
-        bottomPanel.setBackground(new Color(18, 18, 28));
-        bottomPanel.add(startBtn);
-        dialog.add(bottomPanel, BorderLayout.SOUTH);
+        JComboBox<String> mapSelector = new JComboBox<>(bgFiles);
+        mapSelector.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
+        mapSelector.setBackground(new Color(45, 45, 55));
+        mapSelector.setForeground(Color.WHITE);
+        
+        JLabel mapPreview = new JLabel("", SwingConstants.CENTER);
+        mapPreview.setPreferredSize(new Dimension(360, 200));
+        mapPreview.setBorder(BorderFactory.createLineBorder(new Color(80, 130, 220, 100), 2));
+        
+        java.awt.event.ActionListener updatePreview = ev -> {
+            String chosen = (String) mapSelector.getSelectedItem();
+            if (chosen != null) {
+                String path = chosen.equals("battle.png") ? "battle.png" : "backgrounds/" + chosen;
+                ImageIcon icon = assetManager.loadIcon(path, 560, 320); // scalable via preview label if needed
+                if (icon != null) {
+                    // scale to fit preview size roughly
+                    java.awt.Image img = icon.getImage().getScaledInstance(360, 200, java.awt.Image.SCALE_SMOOTH);
+                    mapPreview.setIcon(new ImageIcon(img));
+                    mapPreview.setText("");
+                } else {
+                    mapPreview.setIcon(null);
+                    mapPreview.setText("No Preview Available");
+                    mapPreview.setForeground(Color.GRAY);
+                }
+            }
+        };
+        mapSelector.addActionListener(updatePreview);
+        updatePreview.actionPerformed(null);
+        
+        JPanel mapControlPanel = new JPanel(new BorderLayout(8, 8));
+        mapControlPanel.setBackground(new Color(18, 18, 28));
+        JLabel mapLabel = new JLabel("Select Battle Map:", SwingConstants.LEFT);
+        mapLabel.setForeground(Color.WHITE);
+        mapControlPanel.add(mapLabel, BorderLayout.WEST);
+        mapControlPanel.add(mapSelector, BorderLayout.CENTER);
+        
+        JPanel mapPanel = new JPanel(new BorderLayout(8, 8));
+        mapPanel.setBackground(new Color(18, 18, 28));
+        mapPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 12, 0));
+        mapPanel.add(mapControlPanel, BorderLayout.NORTH);
+        mapPanel.add(mapPreview, BorderLayout.CENTER);
+        // --- MAP SELECTION END ---
 
-        dialog.setSize(620, 500);
+        startBtn.addActionListener(e -> {
+            String chosenMap = (String) mapSelector.getSelectedItem();
+            if (chosenMap != null) {
+                if (chosenMap.equals("battle.png")) {
+                    selectedBattleMap = "battle.png";
+                } else {
+                    selectedBattleMap = "backgrounds/" + chosenMap;
+                }
+            }
+            dialog.dispose();
+        });
+
+        JPanel topPanel = new JPanel(new GridLayout(2, 1, 10, 10));
+        topPanel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
+        topPanel.setBackground(new Color(18, 18, 28));
+        topPanel.add(classPanel);
+        topPanel.add(partyPanel);
+        
+        JPanel centerPanel = new JPanel(new BorderLayout(10, 10));
+        centerPanel.setBackground(new Color(18, 18, 28));
+        centerPanel.setBorder(BorderFactory.createEmptyBorder(8, 16, 16, 16));
+        centerPanel.add(mapPanel, BorderLayout.CENTER);
+
+        JPanel mainContent = new JPanel(new BorderLayout(10, 10));
+        mainContent.setBackground(new Color(18, 18, 28));
+        mainContent.add(topPanel, BorderLayout.NORTH);
+        mainContent.add(centerPanel, BorderLayout.CENTER);
+        
+        javax.swing.JScrollPane scrollPane = new javax.swing.JScrollPane(mainContent);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        
+        dialog.add(scrollPane, BorderLayout.CENTER);
+        
+        JPanel bottomBtnPanel = new JPanel(new BorderLayout());
+        bottomBtnPanel.setBackground(new Color(18, 18, 28));
+        bottomBtnPanel.setBorder(BorderFactory.createEmptyBorder(8, 16, 16, 16));
+        bottomBtnPanel.add(startBtn, BorderLayout.CENTER);
+        dialog.add(bottomBtnPanel, BorderLayout.SOUTH);
+
+        dialog.setSize(800, 600);
+        dialog.setResizable(true);
         dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
 
@@ -935,44 +1020,7 @@ public class RpgGameUI extends JFrame implements
     }
 
     private void openShopInline() {
-        String[] options = {
-            "Health Potion (20)", "Mega Potion (50)",
-            "Mana Potion (30)", "Revive Potion (100)", "Exit Shop"
-        };
-
-        while (true) {
-            int choice = JOptionPane.showOptionDialog(this,
-                "Gold: " + state.getGold() + "\nChoose a purchase:",
-                "Shop", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE,
-                null, options, options[0]);
-
-            if (choice < 0 || choice == 4) break;
-
-            inventory.Item item = switch (choice) {
-                case 0 -> new HealthPotion();
-                case 1 -> new MegaPotion();
-                case 2 -> new ManaPotion();
-                case 3 -> new RevivePotion();
-                default -> null;
-            };
-            double price = switch (choice) {
-                case 0 -> GameConstants.HEALTH_POTION_PRICE;
-                case 1 -> GameConstants.MEGA_POTION_PRICE;
-                case 2 -> GameConstants.MANA_POTION_PRICE;
-                case 3 -> GameConstants.REVIVE_POTION_PRICE;
-                default -> 0;
-            };
-
-            if (item != null) {
-                if (ShopService.buyItem(item, price, state)) {
-                    onLog("Bought " + item.getName() + " for " + price + " gold.");
-                    onStatusUpdate(item.getName() + " added to inventory.");
-                } else {
-                    JOptionPane.showMessageDialog(this, "Not enough gold.", "Shop", JOptionPane.WARNING_MESSAGE);
-                }
-            }
-        }
-        updatePanels();
+        openShopFrame();
     }
 
     // ========================= PUBLIC ACCESSORS FOR SUB-FRAMES =========================

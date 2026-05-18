@@ -16,7 +16,7 @@ import java.awt.GridLayout;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JFrame;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -26,7 +26,7 @@ import javax.swing.JPanel;
  * instead of duplicating buy code.
  * Enhanced with RPG-themed dark styling.
  */
-public class ShopFrame extends JFrame {
+public class ShopFrame extends JDialog {
     private static final long serialVersionUID = 1L;
 
     private static final Color DARK_BG = new Color(22, 24, 34);
@@ -42,7 +42,7 @@ public class ShopFrame extends JFrame {
     private JLabel goldLabel;
 
     public ShopFrame(GameState state, AssetManager assetManager, RpgGameUI parent) {
-        super("\uD83D\uDCB0 Shop");
+        super(parent, "\uD83D\uDCB0 Shop", true);
         this.state = state;
         this.assetManager = assetManager;
         this.parent = parent;
