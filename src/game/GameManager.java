@@ -51,13 +51,10 @@ public class GameManager {
                 continue;
             }
 
-            System.out.println("\n Enter character name: ");
-            String name = scanner.nextLine();
-
             Character newCharacter;
 
             try {
-                newCharacter = CharacterFactory.createCharacter(choice, name);
+                newCharacter = CharacterFactory.createCharacter(choice);
             } catch (IllegalArgumentException e) {
                 System.out.println(e.getMessage());
                 continue;
@@ -79,7 +76,7 @@ public class GameManager {
 
             state.getPlayers().add(newCharacter);
 
-            System.out.println(name + " added to party.");
+            System.out.println(newCharacter.getName() + " added to party.");
 
             choicesMade++;
         }

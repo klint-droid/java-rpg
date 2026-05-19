@@ -4,8 +4,8 @@ import enums.CharacterType;
 import results.BattleResult;
 public class Mage extends Character {
 
-    public Mage(String name) {
-        super(name, 200, 100, 20, 5, CharacterType.MAGE);
+    public Mage() {
+        super("KENT", 200, 100, 20, 5, CharacterType.MAGE);
     }
 
     @Override

@@ -684,7 +684,7 @@ public class RpgGameUI extends JFrame implements
 
             boolean proceedToNext = false;
             while (!proceedToNext) {
-                String[] postOptions = {"Open Shop", "Start Next Wave", "Exit Game"};
+                String[] postOptions = {"Open Shop", "Start Next Wave", "Main Menu"};
                 int choice = JOptionPane.showOptionDialog(this,
                     "What would you like to do next?\nGold: " + (int)state.getGold(),
                     "Post-Wave Options",
@@ -694,7 +694,8 @@ public class RpgGameUI extends JFrame implements
                 switch (choice) {
                     case 0 -> { openShopInline(); updatePanels(); }
                     case 1 -> proceedToNext = true;
-                    default -> { dispose(); return; }
+                    case 2 -> { showIntroMenu(); return; }
+                    default -> { return; }
                 }
             }
 
@@ -710,6 +711,7 @@ public class RpgGameUI extends JFrame implements
             enableActionButtons(false);
             shopButton.setEnabled(false);
             saveButton.setEnabled(false);
+            showIntroMenu();
         }
     }
 

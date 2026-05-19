@@ -1,0 +1,62 @@
+Changes made on 2026-05-19:
+
+1. c:\C_Projects\vgfhj\src\characters\Warrior.java
+   - Modified line 7-9: Removed `String name` from the constructor. Hardcoded "Warrior" via `super("Warrior", ...)`.
+
+2. c:\C_Projects\vgfhj\src\characters\Mage.java
+   - Modified line 7-9: Removed `String name` from the constructor. Hardcoded "Mage" via `super("Mage", ...)`.
+
+3. c:\C_Projects\vgfhj\src\characters\Archer.java
+   - Modified line 7-9: Removed `String name` from the constructor. Hardcoded "Archer" via `super("Archer", ...)`.
+
+4. c:\C_Projects\vgfhj\src\factory\CharacterFactory.java
+   - Modified line 9-34: Changed `createCharacter` and `creatCharacterByType` methods to no longer accept `String name`, and instantiating characters without passing a name.
+
+5. c:\C_Projects\vgfhj\src\game\GameController.java
+   - Deleted lines 113-117: Removed the hardcoded array `builtNames` which was previously assigning specific names ("Thorin", "Elora", etc.).
+   - Modified lines 121-125: Updated `createParty` loop to initialize `Warrior`, `Mage`, and `Archer` using their newly updated default constructors.
+
+6. c:\C_Projects\vgfhj\src\game\GameManager.java
+   - Deleted lines 54-55: Removed the console prompt asking for a character name `System.out.println("\n Enter character name: ");` and `String name = scanner.nextLine();`.
+   - Modified lines 60, 82: Updated instantiation call to `CharacterFactory.createCharacter(choice)` and changed output statement to rely on `newCharacter.getName()`.
+
+7. c:\C_Projects\vgfhj\src\game\SaveManager.java
+   - Modified line 64: Reads the old character name from the save file as `savedName` (to preserve the read sequence) but discards it.
+   - Modified line 71: Calls `CharacterFactory.creatCharacterByType(classType)` without attempting to overwrite the name, so the predefined names in the subclasses take precedence over saved names.
+
+---
+
+Changes made on 2026-05-19 (Phase 2):
+
+1. c:\C_Projects\vgfhj\src\enemies\Goblin.java [NEW]
+   - Created class extending `Enemy` with hardcoded properties for Goblin.
+
+2. c:\C_Projects\vgfhj\src\enemies\Orc.java [NEW]
+   - Created class extending `Enemy` with hardcoded properties for Orc.
+
+3. c:\C_Projects\vgfhj\src\enemies\GoblinArcher.java [NEW]
+   - Created class extending `Enemy` with hardcoded properties for Goblin Archer.
+
+4. c:\C_Projects\vgfhj\src\enemies\DarkMage.java [NEW]
+   - Created class extending `Enemy` with hardcoded properties for Dark Mage.
+
+5. c:\C_Projects\vgfhj\src\enemies\Dragon.java [NEW]
+   - Created class extending `Enemy` with hardcoded properties for Dragon.
+
+6. c:\C_Projects\vgfhj\src\enemies\ShadowBeast.java [NEW]
+   - Created class extending `Enemy` with hardcoded properties for Shadow Beast.
+
+7. c:\C_Projects\vgfhj\src\game\WaveFactory.java
+   - Modified lines 16-24: Replaced hardcoded `new Enemy("...", "...", ...)` calls with instantiation of the newly created specific subclass representations (`new Goblin()`, `new Orc()`, etc.).
+
+8. c:\C_Projects\vgfhj\src\game\SaveManager.java
+   - Modified lines 90-101: Updated enemy loading logic to construct the specific enemy subclass using a switch on the `enemyName` instead of creating a generic `Enemy`. Restored attributes (`maxHp`, `atkPower`, `defPower`) are preserved to maintain consistency with any potential scaling or modifiers during load.
+
+---
+
+Changes made on 2026-05-19 (Phase 3):
+
+1. c:\C_Projects\vgfhj\src\ui\RpgGameUI.java
+   - Modified line 687: Renamed 'Exit Game' to 'Main Menu' in the post-wave options array.
+   - Modified line 696-697: Refactored the post-wave dialog switch statement. Changed choice 2 to correctly invoke `showIntroMenu()` rather than disposing. Modified the default case (when 'X' is clicked) to simply `return` out of `onBattleEnd`, retaining the user inside the Battle UI.
+   - Modified line 711: Inserted a `showIntroMenu();` call at the end of the defeat execution block. This guarantees that when the party loses, the game redirects back to the main menu properly.

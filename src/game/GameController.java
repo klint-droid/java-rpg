@@ -111,18 +111,12 @@ public class GameController {
 
     private void createParty(java.util.List<Integer> selectedClasses) {
         String[] classNames = {"Warrior", "Mage", "Archer"};
-        String[][] builtNames = {
-            {"Thorin", "Brakus", "Garr"},
-            {"Elora", "Mirabel", "Selene"},
-            {"Lyra", "Kael", "Rian"}
-        };
 
         for (int classChoice : selectedClasses) {
-            String name = builtNames[classChoice][state.getPlayers().size() % builtNames[classChoice].length];
             Character newPlayer = switch (classChoice) {
-                case 0 -> new Warrior(name);
-                case 1 -> new Mage(name);
-                default -> new Archer(name);
+                case 0 -> new Warrior();
+                case 1 -> new Mage();
+                default -> new Archer();
             };
 
             state.getPlayers().add(newPlayer);

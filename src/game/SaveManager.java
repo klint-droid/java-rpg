@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 import characters.Character;
-import enemies.Enemy;
+import enemies.*;
 import factory.CharacterFactory;
 import inventory.HealthPotion;
 import inventory.Inventory;
@@ -66,13 +66,13 @@ public class SaveManager {
 
             for(double i = 0; i < playerCount; i++){
                 String classType = scanner.nextLine();
-                String name = scanner.nextLine();
+                String savedName = scanner.nextLine(); // Discard the old saved name
                 double hp = Double.parseDouble(scanner.nextLine());
                 
                 // Read mana. To support old save files, we could theoretically do a check, but assuming save format is strictly enforced
                 double mana = Double.parseDouble(scanner.nextLine());
 
-                Character player = CharacterFactory.creatCharacterByType(classType, name);
+                Character player = CharacterFactory.creatCharacterByType(classType);
 
                 player.setHp(hp);
                 player.setMana(mana);
@@ -91,7 +91,19 @@ public class SaveManager {
                 double defPower = Double.parseDouble(scanner.nextLine());
                 double currentHp = Double.parseDouble(scanner.nextLine());
 
-                Enemy enemy = new Enemy(enemyName, enemyType, maxHp, atkPower, defPower);
+                Enemy enemy = switch (enemyName) {
+                    case "Goblin" -> new Goblin();
+                    case "Orc" -> new Orc();
+                    case "Goblin Archer" -> new GoblinArcher();
+                    case "Dark Mage" -> new DarkMage();
+                    case "Dragon" -> new Dragon();
+                    case "Shadow Beast" -> new ShadowBeast();
+                    default -> new Enemy(enemyName, enemyType, maxHp, atkPower, defPower);
+                };
+                
+                enemy.setMaxHp(maxHp);
+                enemy.setAtkPower(atkPower);
+                enemy.setDefPower(defPower);
                 enemy.setHp(currentHp);
                 enemies.add(enemy);   
             }

@@ -4,8 +4,8 @@ import enums.CharacterType;
 import results.BattleResult;
 public class Archer extends Character {
 
-    public Archer(String name){
-        super(name, 300, 90, 40, 5, CharacterType.ARCHER);
+    public Archer(){
+        super("REX", 300, 90, 40, 5, CharacterType.ARCHER);
     }
 
     @Override
