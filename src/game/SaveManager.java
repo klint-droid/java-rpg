@@ -16,16 +16,19 @@ import inventory.MegaPotion;
 import inventory.RevivePotion;
 
 public class SaveManager {
-    public void saveGame(double currentWave, double gold, ArrayList<Character> players, ArrayList<Enemy> enemies, Inventory inventory){
+    public void saveGame(double currentWave, double gold, double turnCount, int currentPlayerIndex, ArrayList<Character> players, ArrayList<Enemy> enemies, Inventory inventory){
         try (FileWriter writer = new FileWriter("game-state.txt")) {
             writer.write(currentWave + "\n");
             writer.write(gold + "\n");
+            writer.write(turnCount + "\n");
+            writer.write(currentPlayerIndex + "\n");
             writer.write(players.size() + "\n");
 
             for (Character player : players) {
                 writer.write(player.getCharacterType().name() + "\n");
                 writer.write(player.getName() + "\n");
                 writer.write(player.getHp() + "\n");
+                writer.write(player.getMana() + "\n");
             }
 
             // Save enemies
@@ -55,6 +58,8 @@ public class SaveManager {
 
             double currentWave = Double.parseDouble(scanner.nextLine());
             double gold = Double.parseDouble(scanner.nextLine());
+            double turnCount = Double.parseDouble(scanner.nextLine());
+            int currentPlayerIndex = Integer.parseInt(scanner.nextLine());
             double playerCount = Double.parseDouble(scanner.nextLine());
 
             ArrayList<Character> players = new ArrayList<>();
@@ -63,10 +68,14 @@ public class SaveManager {
                 String classType = scanner.nextLine();
                 String name = scanner.nextLine();
                 double hp = Double.parseDouble(scanner.nextLine());
+                
+                // Read mana. To support old save files, we could theoretically do a check, but assuming save format is strictly enforced
+                double mana = Double.parseDouble(scanner.nextLine());
 
                 Character player = CharacterFactory.creatCharacterByType(classType, name);
 
                 player.setHp(hp);
+                player.setMana(mana);
                 players.add(player);   
             }
 
@@ -109,7 +118,7 @@ public class SaveManager {
 
             scanner.close();
 
-            return new SaveData(currentWave, gold, players, enemies, inventory);
+            return new SaveData(currentWave, gold, turnCount, currentPlayerIndex, players, enemies, inventory);
         } catch (Exception e) {
             System.out.println("Save file not found or corrupted.");
             e.printStackTrace();

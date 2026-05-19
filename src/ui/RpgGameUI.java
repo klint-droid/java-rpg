@@ -370,10 +370,11 @@ public class RpgGameUI extends JFrame implements
         subtitleLabel.setAlignmentX(0.5f);
 
         // Description
-        JLabel descLabel = new JLabel("<html><center>Lead your party to victory against fearsome enemies.<br>Manage resources, choose actions wisely.</center></html>");
+        JLabel descLabel = new JLabel("<html><div style='text-align: center;'>Lead your party to victory against fearsome enemies.<br>Manage resources, choose actions wisely.</div></html>");
+        descLabel.setHorizontalAlignment(SwingConstants.CENTER);
         descLabel.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
         descLabel.setForeground(new Color(180, 180, 200));
-        descLabel.setAlignmentX(1.0f);
+        descLabel.setAlignmentX(0.5f);
 
         mainPanel.add(titleLabel);
         mainPanel.add(Box.createVerticalStrut(8));

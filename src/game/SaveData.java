@@ -11,10 +11,14 @@ public class SaveData {
     private ArrayList<Character> players;
     private ArrayList<Enemy> enemies;
     private Inventory inventory;
+    private double turnCount;
+    private int currentPlayerIndex;
 
-    public SaveData(double currentWave, double gold, ArrayList<Character> players, ArrayList<Enemy> enemies, Inventory inventory) {
+    public SaveData(double currentWave, double gold, double turnCount, int currentPlayerIndex, ArrayList<Character> players, ArrayList<Enemy> enemies, Inventory inventory) {
         this.currentWave = currentWave;
         this.gold = gold;
+        this.turnCount = turnCount;
+        this.currentPlayerIndex = currentPlayerIndex;
         this.players = players;
         this.enemies = enemies;
         this.inventory = inventory;
@@ -39,5 +43,12 @@ public class SaveData {
     public Inventory getInventory() {
         return inventory;
     }
-}
 
+    public double getTurnCount() {
+        return turnCount;
+    }
+
+    public int getCurrentPlayerIndex() {
+        return currentPlayerIndex;
+    }
+}

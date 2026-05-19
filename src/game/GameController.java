@@ -66,8 +66,8 @@ public class GameController {
         state.setGold(saveData.getGold());
         state.setEnemies(saveData.getEnemies());
         state.setEnemiesDefeated((saveData.getCurrentWave() - 1));
-        state.setTurnCount(1);
-        state.setCurrentPlayerIndex(0);
+        state.setTurnCount(saveData.getTurnCount());
+        state.setCurrentPlayerIndex(saveData.getCurrentPlayerIndex());
         return true;
     }
 
@@ -105,7 +105,7 @@ public class GameController {
      */
     public void saveGame() {
         SaveManager saveManager = new SaveManager();
-        saveManager.saveGame(state.getCurrentWave(), state.getGold(),
+        saveManager.saveGame(state.getCurrentWave(), state.getGold(), state.getTurnCount(), state.getCurrentPlayerIndex(),
                 state.getPlayers(), state.getEnemies(), state.getInventory());
     }
 

@@ -125,7 +125,7 @@ public class GameManager {
                 state.setGold(shop.openShop());
 
                 SaveManager saveManager = new SaveManager();
-                saveManager.saveGame(state.getCurrentWave(), state.getGold(), state.getPlayers(), state.getEnemies(), state.getInventory());
+                saveManager.saveGame(state.getCurrentWave(), state.getGold(), state.getTurnCount(), state.getCurrentPlayerIndex(), state.getPlayers(), state.getEnemies(), state.getInventory());
                 state.setCurrentWave(state.getCurrentWave() + 1);
             }       
         }
@@ -156,6 +156,8 @@ public class GameManager {
         state.setPlayers(saveData.getPlayers());
         state.setEnemies(saveData.getEnemies());
         state.setInventory(saveData.getInventory());
+        state.setTurnCount(saveData.getTurnCount());
+        state.setCurrentPlayerIndex(saveData.getCurrentPlayerIndex());
     }
 
     public void startLoadedGame(){
