@@ -60,3 +60,19 @@ Changes made on 2026-05-19 (Phase 3):
    - Modified line 687: Renamed 'Exit Game' to 'Main Menu' in the post-wave options array.
    - Modified line 696-697: Refactored the post-wave dialog switch statement. Changed choice 2 to correctly invoke `showIntroMenu()` rather than disposing. Modified the default case (when 'X' is clicked) to simply `return` out of `onBattleEnd`, retaining the user inside the Battle UI.
    - Modified line 711: Inserted a `showIntroMenu();` call at the end of the defeat execution block. This guarantees that when the party loses, the game redirects back to the main menu properly.
+
+---
+
+Changes made on 2026-05-19 (Phase 4):
+
+1. c:\C_Projects\vgfhj\src\ui\RpgGameUI.java
+   - Modified lines 796-797: Added `"Paladin"` to choices array and `"players/paladin.png"` to images array in `showTeamBuilderDialog`.
+   - Modified lines 806, 820, 849, 870: Updated GUI layout constraints and logic checks to accommodate a max selection of 3 party members (up from 2) and display 3 slots.
+
+2. c:\C_Projects\vgfhj\src\game\GameController.java
+   - Modified line 112: Added `"Paladin"` to the `classNames` array.
+   - Modified line 118: Added `case 2 -> new Archer();` and `default -> new Paladin();` to safely parse the exact class selections from GUI.
+
+3. c:\C_Projects\vgfhj\src\game\GameManager.java
+   - Modified line 39: Increased `choicesMade` limit from `< 2` to `< 3`.
+   - Modified line 43: Added `System.out.println("4. Paladin");` to terminal character selection output.

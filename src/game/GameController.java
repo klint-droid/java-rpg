@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import characters.Archer;
 import characters.Character;
 import characters.Mage;
+import characters.Paladin;
 import characters.Warrior;
 import constants.GameConstants;
 
@@ -110,13 +111,14 @@ public class GameController {
     }
 
     private void createParty(java.util.List<Integer> selectedClasses) {
-        String[] classNames = {"Warrior", "Mage", "Archer"};
+        String[] classNames = {"Warrior", "Mage", "Archer", "Paladin"};
 
         for (int classChoice : selectedClasses) {
             Character newPlayer = switch (classChoice) {
                 case 0 -> new Warrior();
                 case 1 -> new Mage();
-                default -> new Archer();
+                case 2 -> new Archer();
+                default -> new Paladin();
             };
 
             state.getPlayers().add(newPlayer);

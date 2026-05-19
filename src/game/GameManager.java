@@ -36,11 +36,12 @@ public class GameManager {
         System.out.println("------ CREATE PARTY ------" + "\n");
         double choicesMade = 0;
 
-        while(choicesMade < 2){
+        while(choicesMade < 3){
             System.out.println("\n Choose characters: " + (choicesMade + 1));
             System.out.println("1. Warrior");
             System.out.println("2. Mage");
             System.out.println("3. Archer");
+            System.out.println("4. Paladin");
 
             int choice;
 

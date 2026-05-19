@@ -3,6 +3,7 @@ import characters.Archer;
 import characters.Character;
 import characters.Mage;
 import characters.Warrior;
+import characters.Paladin;
 public class CharacterFactory {
     private CharacterFactory() {}
 
@@ -14,6 +15,8 @@ public class CharacterFactory {
                 return new Mage();
             case 3:
                 return new Archer();
+            case 4:
+                return new Paladin();
             default:
                 throw new IllegalArgumentException("Invalid choice");
         }
@@ -27,6 +30,8 @@ public class CharacterFactory {
                 return new Mage();
             case "ARCHER":
                 return new Archer();
+            case "PALADIN":
+                return new Paladin();
         
             default:
                 throw new IllegalArgumentException("Invalid type");

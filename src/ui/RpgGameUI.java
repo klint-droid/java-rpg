@@ -793,8 +793,8 @@ public class RpgGameUI extends JFrame implements
     }
 
     private java.util.List<Integer> showTeamBuilderDialog() {
-        String[] choices = {"Warrior", "Mage", "Archer"};
-        String[] imgs = {"players/warrior.png", "players/mage.png", "players/archer.png"};
+        String[] choices = {"Warrior", "Mage", "Archer", "Paladin"};
+        String[] imgs = {"players/warrior.png", "players/mage.png", "players/archer.png", "players/paladin.png"};
         
         java.util.List<Integer> selectedClasses = new ArrayList<>();
         
@@ -803,7 +803,7 @@ public class RpgGameUI extends JFrame implements
         dialog.setLayout(new BorderLayout(12, 12));
         dialog.getContentPane().setBackground(new Color(18, 18, 28));
 
-        JLabel prompt = new JLabel("Click to add/remove members (Max 2)", SwingConstants.CENTER);
+        JLabel prompt = new JLabel("Click to add/remove members (Max 3)", SwingConstants.CENTER);
         prompt.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 18));
         prompt.setForeground(Color.WHITE);
         prompt.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
@@ -817,7 +817,7 @@ public class RpgGameUI extends JFrame implements
             new Font(Font.SANS_SERIF, Font.BOLD, 13), new Color(255, 215, 80)));
         classPanel.setBackground(new Color(24, 26, 36));
 
-        JPanel partyPanel = new JPanel(new GridLayout(1, 2, 16, 16));
+        JPanel partyPanel = new JPanel(new GridLayout(1, 3, 16, 16));
         partyPanel.setBorder(BorderFactory.createTitledBorder(
             BorderFactory.createLineBorder(new Color(80, 220, 130, 100), 2),
             "CURRENT PARTY", javax.swing.border.TitledBorder.LEFT,
@@ -852,7 +852,7 @@ public class RpgGameUI extends JFrame implements
                 });
                 partyPanel.add(pBtn);
             }
-            for (int i = selectedClasses.size(); i < 2; i++) {
+            for (int i = selectedClasses.size(); i < 3; i++) {
                 JLabel emptySlot = new JLabel("Empty Slot", SwingConstants.CENTER);
                 emptySlot.setForeground(Color.GRAY);
                 emptySlot.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 2, true));
@@ -874,7 +874,7 @@ public class RpgGameUI extends JFrame implements
             btn.setBackground(new Color(45, 45, 55));
             btn.setToolTipText("Click to add to party");
             btn.addActionListener(e -> {
-                if (selectedClasses.size() < 2) {
+                if (selectedClasses.size() < 3) {
                     selectedClasses.add(classChoice);
                     updateUIRef[0].run();
                 }

@@ -113,6 +113,7 @@ public class AssetManager {
                 if (name.contains("warrior")) target = "char_warrior.png";
                 else if (name.contains("archer") && !name.contains("goblin")) target = "char_archer.png";
                 else if (name.contains("mage") && !name.contains("dark")) target = "char_mage.png";
+                else if (name.contains("paladin")) target = "char_paladin.png";
 
                 // Enemy portraits — order matters (specific before general)
                 else if (name.contains("goblin") && (name.contains("arher") || name.contains("archer")))
