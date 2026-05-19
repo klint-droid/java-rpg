@@ -5,7 +5,7 @@ import results.BattleResult;
 public class Archer extends Character {
 
     public Archer(){
-        super("REX", 300, 90, 40, 5, CharacterType.ARCHER);
+        super("REX", 300, 100, 40, 5, CharacterType.ARCHER);
     }
 
     @Override
@@ -62,10 +62,10 @@ public class Archer extends Character {
 
         double totalDamage = 0;
 
-        for(double i = 1; i <= 3; i++){
+        for(double i = 1; i <= 5; i++){
 
             double damage =
-                calculateDamage(target, 0.7);
+                calculateDamage(target, 2.0);
 
             target.takeDamage(damage);
             totalDamage += damage;

@@ -14,12 +14,21 @@ public class WaveFactory {
     public static ArrayList<Enemy> createWave(int wave) {
         ArrayList<Enemy> waveEnemies = new ArrayList<>();
         switch (wave) {
-            case 1 -> waveEnemies.add(new Goblin());
+            case 1 -> {
+                waveEnemies.add(new Goblin());
+                waveEnemies.add(new Goblin());
+            }
             case 2 -> {
                 waveEnemies.add(new Orc());
                 waveEnemies.add(new GoblinArcher());
+                waveEnemies.add(new Goblin());
             }
-            case 3 -> waveEnemies.add(new DarkMage());
+            case 3 -> {
+                waveEnemies.add(new DarkMage());
+                waveEnemies.add(new Orc());
+                waveEnemies.add(new GoblinArcher());
+                waveEnemies.add(new Goblin());
+            }
             case 4 -> waveEnemies.add(new Dragon());
             default -> waveEnemies.add(new ShadowBeast());
         }

@@ -5,7 +5,7 @@ import results.BattleResult;
 public class Mage extends Character {
 
     public Mage() {
-        super("KENT", 200, 100, 20, 5, CharacterType.MAGE);
+        super("KENT", 200, 500, 20, 5, CharacterType.MAGE);
     }
 
     @Override
